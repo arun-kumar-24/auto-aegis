@@ -5,7 +5,9 @@
   "type": "module",
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "monitor": "node src/monitor.js",
+    "diagnose": "node src/diagnostics.js"
   },
   "dependencies": {
     "playwright": "^1.58.2",
