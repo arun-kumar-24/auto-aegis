@@ -25,7 +25,7 @@ const chaosMiddleware = (options = {}) => {
         }
 
         // 3. Simulate Random Errors
-        if (Math.floor(Math.random() * 11) / 10 >= 0.7) {
+        if (errorRate > 0 && Math.random() < errorRate) {
             const errors = [
                 { status: 500, message: "Internal Server Error (Simulated)" },
                 { status: 502, message: "Bad Gateway (Simulated)" },
