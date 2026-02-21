@@ -27,7 +27,7 @@ app.use(cookieParser());
 // ───── ☢️ Chaos Engine (Sabotage Middleware) ─────
 // You can toggle these values to test frontend resilience
 const chaosConfig = {
-    errorRate: 0.05,    // 5% chance of random API failure
+    errorRate: 0.1,     // 10% chance of random API failure (1 in 10 times)
     latencyMs: 100,     // 100ms base delay
     isBroken: false     // Set true to kill the whole API
 };
