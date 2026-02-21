@@ -1,0 +1,14 @@
+{
+  "name": "dom-session-recorder",
+  "version": "1.0.0",
+  "description": "Event-Driven DOM Session Recorder using Playwright",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "playwright": "^1.49.0",
+    "uuid": "^11.0.0"
+  }
+}
