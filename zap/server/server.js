@@ -32,7 +32,11 @@ const chaosConfig = {
     isBroken: false     // Set true to kill the whole API
 };
 
-app.use("/api", chaosMiddleware(chaosConfig));
+// Skip chaos for auth routes so login/register always work
+app.use("/api", (req, res, next) => {
+    if (req.path.startsWith("/auth")) return next();
+    return chaosMiddleware(chaosConfig)(req, res, next);
+});
 
 // ───── Routes ─────
 
@@ -54,9 +58,20 @@ app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
 
 // ───── Start Server ─────
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
     console.log(`\nServer running on http://localhost:${PORT}`);
-    console.log(`Chaos Engine active on /api routes (Error Rate: ${chaosConfig.errorRate * 100}%)\n`);
+});
+
+// Handle server errors (e.g., port already in use)
+server.on("error", (err) => {
+    if (err.code === "EADDRINUSE") {
+        console.error(`\n❌ Error: Port ${PORT} is already in use.`);
+        console.error(`   Please stop any other running servers (like 'pnpm dev') or use a different port.\n`);
+        process.exit(1);
+    } else {
+        console.error("\n❌ Server error:", err);
+        process.exit(1);
+    }
 });
 
 // Graceful shutdown
