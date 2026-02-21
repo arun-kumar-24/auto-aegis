@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Package, ChevronDown, ChevronUp, ShoppingBag } from 'lucide-react';
+import { Package, ChevronDown, ChevronUp, ShoppingBag, AlertTriangle, RefreshCw } from 'lucide-react';
 import Button from '../components/Button';
 import { SkeletonBlock } from '../components/SkeletonLoader';
 
@@ -10,14 +10,18 @@ function OrderRow({ order }) {
     const [open, setOpen] = useState(false);
     const [items, setItems] = useState(order.order_items || []);
     const [loading, setLoading] = useState(false);
+    const [itemError, setItemError] = useState(false);
 
     async function toggleExpand() {
         if (!open && items.length === 0) {
             setLoading(true);
+            setItemError(false);
             try {
                 const res = await api.get(`/orders/${order.id}/items`);
                 setItems(res.data.items || []);
-            } catch { }
+            } catch {
+                setItemError(true);
+            }
             finally { setLoading(false); }
         }
         setOpen(o => !o);
@@ -58,6 +62,10 @@ function OrderRow({ order }) {
                         <div className="space-y-2">
                             {[1, 2].map(i => <SkeletonBlock key={i} className="h-12" />)}
                         </div>
+                    ) : itemError ? (
+                        <p className="text-xs text-red-400 flex items-center gap-1.5">
+                            <AlertTriangle size={12} /> Failed to load order items — please try again.
+                        </p>
                     ) : items.length === 0 ? (
                         <p className="text-xs text-zinc-600">No items found.</p>
                     ) : (
@@ -87,14 +95,19 @@ export default function OrdersPage() {
     const navigate = useNavigate();
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(false);
 
-    useEffect(() => {
+    const fetchOrders = useCallback(() => {
         if (!user) { navigate('/login'); return; }
+        setLoading(true);
+        setError(false);
         api.get('/orders')
             .then((res) => setOrders(res.data.orders || res.data || []))
-            .catch(() => { })
+            .catch(() => setError(true))
             .finally(() => setLoading(false));
     }, [user, navigate]);
+
+    useEffect(() => { fetchOrders(); }, [fetchOrders]);
 
     return (
         <main className="min-h-screen pt-24 pb-16 page-enter">
@@ -106,6 +119,22 @@ export default function OrdersPage() {
                 {loading ? (
                     <div className="space-y-4">
                         {[1, 2, 3].map(i => <SkeletonBlock key={i} className="h-20 rounded-2xl" />)}
+                    </div>
+                ) : error ? (
+                    <div className="flex flex-col items-center justify-center py-24 gap-4">
+                        <div className="w-14 h-14 rounded-full bg-red-900/20 border border-red-800/40 flex items-center justify-center">
+                            <AlertTriangle size={26} className="text-red-400" />
+                        </div>
+                        <div className="text-center">
+                            <p className="text-zinc-300 font-medium">Failed to load orders</p>
+                            <p className="text-zinc-600 text-sm mt-1">The server may be experiencing issues. Try again.</p>
+                        </div>
+                        <button
+                            onClick={fetchOrders}
+                            className="flex items-center gap-2 px-5 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium transition-colors"
+                        >
+                            <RefreshCw size={14} /> Retry
+                        </button>
                     </div>
                 ) : orders.length === 0 ? (
                     <div className="text-center py-24 space-y-4">

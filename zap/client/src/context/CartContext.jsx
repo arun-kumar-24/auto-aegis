@@ -15,7 +15,13 @@ export function CartProvider({ children }) {
         if (user) {
             api.get('/cart')
                 .then((res) => setCartItems(res.data.items || []))
-                .catch(() => { }); // silently fallback to local state
+                .catch(() => {
+                    // Cart load failed (chaos / network) — stay with local state
+                    toast('Could not load cart from server. Using local cart.', {
+                        icon: '⚠️',
+                        duration: 3000,
+                    });
+                });
         } else {
             setCartItems([]);
         }
@@ -25,6 +31,7 @@ export function CartProvider({ children }) {
     const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
     const addToCart = useCallback(async (product, quantity = 1) => {
+        // Optimistic update first — UI is always responsive
         setCartItems((prev) => {
             const existing = prev.find((i) => i.product_id === product.id);
             if (existing) {
@@ -37,14 +44,24 @@ export function CartProvider({ children }) {
         toast.success(`${product.name} added to cart!`);
 
         if (user) {
-            await api.post('/cart', { product_id: product.id, quantity }).catch(() => { });
+            await api.post('/cart', { product_id: product.id, quantity }).catch(() => {
+                toast('Cart item saved locally — server sync failed.', {
+                    icon: '⚠️',
+                    duration: 3000,
+                });
+            });
         }
     }, [user]);
 
     const removeFromCart = useCallback(async (productId) => {
         setCartItems((prev) => prev.filter((i) => i.product_id !== productId));
         if (user) {
-            await api.delete(`/cart/${productId}`).catch(() => { });
+            await api.delete(`/cart/${productId}`).catch(() => {
+                toast('Removal saved locally — server sync failed.', {
+                    icon: '⚠️',
+                    duration: 3000,
+                });
+            });
         }
     }, [user]);
 
@@ -54,7 +71,12 @@ export function CartProvider({ children }) {
             prev.map((i) => (i.product_id === productId ? { ...i, quantity } : i))
         );
         if (user) {
-            await api.patch(`/cart/${productId}`, { quantity }).catch(() => { });
+            await api.patch(`/cart/${productId}`, { quantity }).catch(() => {
+                toast('Quantity saved locally — server sync failed.', {
+                    icon: '⚠️',
+                    duration: 3000,
+                });
+            });
         }
     }, [user]);
 
