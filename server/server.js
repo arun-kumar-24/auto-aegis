@@ -2,18 +2,27 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import multer from 'multer';
+import cookieParser from 'cookie-parser';
 import { supabase } from './lib/supabase.js';
+import authRoutes from './routes/authRoutes.js';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Setup Multer (InMemory for easy forwarding to Supabase)
+// Setup Multer (InMemory)
 const upload = multer({ storage: multer.memoryStorage() });
 
-app.use(cors());
+app.use(cors({
+    origin: 'http://localhost:3000', // Adjust to your frontend URL
+    credentials: true // Required for cookies
+}));
 app.use(express.json());
+app.use(cookieParser());
+
+// Registration of modular routes
+app.use('/api/auth', authRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
@@ -81,7 +90,19 @@ app.get('/api/storage/list', async (req, res) => {
     }
 });
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
     console.log(`\n🚀 Server running on http://localhost:${PORT}`);
     console.log(`✨ Connected to Supabase (URL: ${process.env.SUPABASE_URL})`);
+});
+
+// Handle server errors (e.g., port already in use)
+server.on("error", (err) => {
+    if (err.code === "EADDRINUSE") {
+        console.error(`\n❌ Error: Port ${PORT} is already in use.`);
+        console.error(`   A previous instance of the server might still be running.`);
+        process.exit(1);
+    } else {
+        console.error("\n❌ Server error:", err);
+        process.exit(1);
+    }
 });
