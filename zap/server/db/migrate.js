@@ -7,7 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const runMigration = async () => {
-    console.log("🚀 Starting database migration...\n");
+    console.log("Starting database migration...\n");
 
     try {
         // Read the schema SQL file

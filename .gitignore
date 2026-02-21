@@ -137,3 +137,10 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+.vscode/*
+# Temporary files
+tmp/
+temp/
+node_modules/
+.browser-data/
