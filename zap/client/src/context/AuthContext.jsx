@@ -14,9 +14,15 @@ export function AuthProvider({ children }) {
         if (!token) { setLoading(false); return; }
         api.get('/auth/me')
             .then((res) => setUser(res.data.user))
-            .catch(() => {
-                localStorage.removeItem('token');
-                setToken(null);
+            .catch((err) => {
+                const status = err?.response?.status;
+                // Only wipe token on a genuine auth failure (401).
+                // Transient chaos errors (5xx, network) must NOT log the user out.
+                if (!status || status === 401) {
+                    localStorage.removeItem('token');
+                    setToken(null);
+                }
+                // For 5xx / network errors: keep token, user stays logged in
             })
             .finally(() => setLoading(false));
     }, [token]);

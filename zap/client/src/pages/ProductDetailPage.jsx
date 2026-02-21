@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { useCart } from '../context/CartContext';
 import Button from '../components/Button';
 import { SkeletonBlock, SkeletonText } from '../components/SkeletonLoader';
-import { ArrowLeft, Package, ShoppingCart, Tag } from 'lucide-react';
+import { ArrowLeft, Package, ShoppingCart, Tag, AlertTriangle, RefreshCw } from 'lucide-react';
 
 export default function ProductDetailPage() {
     const { id } = useParams();
@@ -12,15 +12,24 @@ export default function ProductDetailPage() {
     const { addToCart } = useCart();
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);  // null | 'chaos' | 'not_found'
     const [adding, setAdding] = useState(false);
     const [qty, setQty] = useState(1);
 
-    useEffect(() => {
+    const fetchProduct = useCallback(() => {
+        setLoading(true);
+        setError(null);
         api.get(`/products/${id}`)
             .then((res) => setProduct(res.data.product || res.data))
-            .catch(() => { })
+            .catch((err) => {
+                const status = err?.response?.status;
+                // Distinguish genuine "not found" from transient chaos errors
+                setError(status === 404 ? 'not_found' : 'chaos');
+            })
             .finally(() => setLoading(false));
     }, [id]);
+
+    useEffect(() => { fetchProduct(); }, [fetchProduct]);
 
     async function handleAdd() {
         if (!product) return;
@@ -47,13 +56,40 @@ export default function ProductDetailPage() {
         );
     }
 
-    if (!product) {
+    // Genuine 404
+    if (error === 'not_found') {
         return (
             <main className="min-h-screen pt-24 flex items-center justify-center">
                 <div className="text-center space-y-4">
                     <Package size={48} className="mx-auto text-zinc-700" />
                     <p className="text-zinc-500">Product not found.</p>
                     <Button variant="ghost" onClick={() => navigate('/')}>Go back</Button>
+                </div>
+            </main>
+        );
+    }
+
+    // Transient chaos / network error
+    if (error === 'chaos') {
+        return (
+            <main className="min-h-screen pt-24 flex items-center justify-center">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-14 h-14 rounded-full bg-red-900/20 border border-red-800/40 flex items-center justify-center">
+                        <AlertTriangle size={26} className="text-red-400" />
+                    </div>
+                    <div className="text-center">
+                        <p className="text-zinc-300 font-medium">Failed to load product</p>
+                        <p className="text-zinc-600 text-sm mt-1">Server error — this may be temporary.</p>
+                    </div>
+                    <div className="flex gap-3">
+                        <button
+                            onClick={fetchProduct}
+                            className="flex items-center gap-2 px-5 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium transition-colors"
+                        >
+                            <RefreshCw size={14} /> Retry
+                        </button>
+                        <Button variant="ghost" onClick={() => navigate('/')}>Go back</Button>
+                    </div>
                 </div>
             </main>
         );

@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import api from '../services/api';
 import ProductCard, { ProductCardSkeleton } from '../components/ProductCard';
-import { Search, SlidersHorizontal } from 'lucide-react';
+import { Search, SlidersHorizontal, RefreshCw, AlertTriangle } from 'lucide-react';
 
 const SKELETON_COUNT = 8;
 
@@ -9,24 +9,36 @@ export default function HomePage() {
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(false);
     const [search, setSearch] = useState('');
     const [activeCategory, setActiveCategory] = useState(null);
 
-    useEffect(() => {
-        Promise.all([api.get('/products'), api.get('/categories')])
+    const fetchData = useCallback(() => {
+        setLoading(true);
+        setError(false);
+        Promise.all([
+            api.get('/products'),
+            api.get('/products/categories'),
+        ])
             .then(([pRes, cRes]) => {
-                setProducts(pRes.data.products || pRes.data || []);
-                setCategories(cRes.data.categories || cRes.data || []);
+                const prods = pRes.data.products ?? pRes.data ?? [];
+                const cats = cRes.data.categories ?? cRes.data ?? [];
+                setProducts(Array.isArray(prods) ? prods : []);
+                setCategories(Array.isArray(cats) ? cats : []);
             })
-            .catch(() => { })
+            .catch(() => setError(true))
             .finally(() => setLoading(false));
     }, []);
 
-    const filtered = products.filter((p) => {
-        const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase());
-        const matchesCat = activeCategory ? p.category_id === activeCategory : true;
-        return matchesSearch && matchesCat;
-    });
+    useEffect(() => { fetchData(); }, [fetchData]);
+
+    const filtered = Array.isArray(products)
+        ? products.filter((p) => {
+            const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase());
+            const matchesCat = activeCategory ? p.category_id === activeCategory : true;
+            return matchesSearch && matchesCat;
+        })
+        : [];
 
     return (
         <main className="min-h-screen pt-24 pb-16 page-enter">
@@ -69,8 +81,8 @@ export default function HomePage() {
                         <button
                             onClick={() => setActiveCategory(null)}
                             className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-medium border transition-all ${!activeCategory
-                                    ? 'bg-violet-600 border-violet-600 text-white'
-                                    : 'bg-transparent border-zinc-700 text-zinc-400 hover:border-violet-500/50 hover:text-zinc-200'
+                                ? 'bg-violet-600 border-violet-600 text-white'
+                                : 'bg-transparent border-zinc-700 text-zinc-400 hover:border-violet-500/50 hover:text-zinc-200'
                                 }`}
                         >
                             All
@@ -80,8 +92,8 @@ export default function HomePage() {
                                 key={cat.id}
                                 onClick={() => setActiveCategory(activeCategory === cat.id ? null : cat.id)}
                                 className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-medium border transition-all ${activeCategory === cat.id
-                                        ? 'bg-violet-600 border-violet-600 text-white'
-                                        : 'bg-transparent border-zinc-700 text-zinc-400 hover:border-violet-500/50 hover:text-zinc-200'
+                                    ? 'bg-violet-600 border-violet-600 text-white'
+                                    : 'bg-transparent border-zinc-700 text-zinc-400 hover:border-violet-500/50 hover:text-zinc-200'
                                     }`}
                             >
                                 {cat.name}
@@ -90,10 +102,26 @@ export default function HomePage() {
                     </div>
                 )}
 
-                {/* Grid */}
+                {/* Grid / Error / Empty */}
                 {loading ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                         {Array.from({ length: SKELETON_COUNT }).map((_, i) => <ProductCardSkeleton key={i} />)}
+                    </div>
+                ) : error ? (
+                    <div className="flex flex-col items-center justify-center py-24 gap-4">
+                        <div className="w-14 h-14 rounded-full bg-red-900/20 border border-red-800/40 flex items-center justify-center">
+                            <AlertTriangle size={26} className="text-red-400" />
+                        </div>
+                        <div className="text-center">
+                            <p className="text-zinc-300 font-medium">Failed to load products</p>
+                            <p className="text-zinc-600 text-sm mt-1">The server may be experiencing issues. Try again.</p>
+                        </div>
+                        <button
+                            onClick={fetchData}
+                            className="flex items-center gap-2 px-5 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium transition-colors"
+                        >
+                            <RefreshCw size={14} /> Retry
+                        </button>
                     </div>
                 ) : filtered.length === 0 ? (
                     <div className="text-center py-24 text-zinc-600">
