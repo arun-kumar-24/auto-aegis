@@ -1,0 +1,4 @@
+/* App.css — intentionally empty.
+   All global styles live in index.css (Tailwind v4 + custom tokens).
+   The Vite scaffold defaults (max-width, padding, text-align on #root)
+   were removed because they broke the full-width navbar and grid layouts. */
