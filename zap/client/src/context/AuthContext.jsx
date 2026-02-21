@@ -5,7 +5,14 @@ import toast from 'react-hot-toast';
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-    const [user, setUser] = useState(null);
+    const [user, setUser] = useState(() => {
+        const savedUser = localStorage.getItem('user');
+        try {
+            return savedUser ? JSON.parse(savedUser) : null;
+        } catch (e) {
+            return null;
+        }
+    });
     const [token, setToken] = useState(() => localStorage.getItem('token'));
     const [loading, setLoading] = useState(true);
 
@@ -18,11 +25,12 @@ export function AuthProvider({ children }) {
                 const status = err?.response?.status;
                 // Only wipe token on a genuine auth failure (401).
                 // Transient chaos errors (5xx, network) must NOT log the user out.
-                if (!status || status === 401) {
+                if (status === 401) {
                     localStorage.removeItem('token');
+                    localStorage.removeItem('user');
                     setToken(null);
+                    setUser(null);
                 }
-                // For 5xx / network errors: keep token, user stays logged in
             })
             .finally(() => setLoading(false));
     }, [token]);
@@ -31,6 +39,7 @@ export function AuthProvider({ children }) {
         const res = await api.post('/auth/login', { email, password });
         const { token: newToken, user: newUser } = res.data;
         localStorage.setItem('token', newToken);
+        localStorage.setItem('user', JSON.stringify(newUser));
         setToken(newToken);
         setUser(newUser);
         toast.success(`Welcome back, ${newUser.name}!`);
@@ -41,6 +50,7 @@ export function AuthProvider({ children }) {
         const res = await api.post('/auth/signup', { name, email, password });
         const { token: newToken, user: newUser } = res.data;
         localStorage.setItem('token', newToken);
+        localStorage.setItem('user', JSON.stringify(newUser));
         setToken(newToken);
         setUser(newUser);
         toast.success('Account created!');
@@ -49,6 +59,7 @@ export function AuthProvider({ children }) {
 
     const logout = useCallback(() => {
         localStorage.removeItem('token');
+        localStorage.removeItem('user');
         setToken(null);
         setUser(null);
         toast('Logged out.', { icon: '👋' });

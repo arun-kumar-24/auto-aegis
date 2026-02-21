@@ -2,7 +2,7 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 
 const api = axios.create({
-    baseURL: '/api',  // proxied to http://localhost:5000/api via vite.config.js
+    baseURL: import.meta.env.VITE_API_URL || '/api',
     timeout: 15000,
     headers: { 'Content-Type': 'application/json' },
 });
@@ -32,8 +32,7 @@ api.interceptors.response.use(
 
         if (status === 401) {
             toast.error('Session expired. Please log in again.');
-            localStorage.removeItem('token');
-            window.location.href = '/login';
+            // Removed automatic redirect to allow AuthContext to handle persistence checks
         } else if (status === 429) {
             toast.error(isChaos
                 ? '⚡ Chaos: Too many requests — slow down!'
