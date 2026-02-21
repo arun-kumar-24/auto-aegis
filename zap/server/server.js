@@ -27,7 +27,7 @@ app.use(cookieParser());
 // ───── ☢️ Chaos Engine (Sabotage Middleware) ─────
 // You can toggle these values to test frontend resilience
 const chaosConfig = {
-    errorRate: 0.05,    // 5% chance of random API failure
+    errorRate: Math.floor(Math.random()*11)/10,    // Random error rate between 0 and 1.0
     latencyMs: 100,     // 100ms base delay
     isBroken: false     // Set true to kill the whole API
 };
@@ -56,7 +56,7 @@ app.use("/api/orders", orderRoutes);
 // ───── Start Server ─────
 app.listen(PORT, () => {
     console.log(`\nServer running on http://localhost:${PORT}`);
-    console.log(`Chaos Engine active on /api routes (Error Rate: ${chaosConfig.errorRate * 100}%)\n`);
+    // console.log(`Chaos Engine active on /api routes (Error Rate: ${chaosConfig.errorRate * 10}%)\n`);
 });
 
 // Graceful shutdown
