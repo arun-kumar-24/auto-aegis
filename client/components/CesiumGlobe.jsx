@@ -74,7 +74,7 @@ function estimateLatency(distKm) {
 
 // Generate simulated hit data based on distance (farther = more failures)
 function simulateHits(distKm) {
-    const totalHits = Math.round(3000 + Math.random() * 22000);
+    const totalHits = Math.round(5 + Math.random() * 20); // 5–25 hits
     const failRate = Math.min(0.3, distKm / 50000 + Math.random() * 0.05);
     const successHits = Math.round(totalHits * (1 - failRate));
     return { totalHits, successHits };

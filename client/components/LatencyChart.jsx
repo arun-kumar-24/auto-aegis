@@ -141,15 +141,31 @@ function RoundedBar(props) {
 const THRESHOLD = 100;
 const SIM_DURATION = 15; // seconds
 
-function generateSimLatency(second) {
+/**
+ * Build a random spike plan: pick 2-3 random seconds to spike.
+ * Returns a Set of seconds that should have elevated latency.
+ */
+function buildSpikePlan() {
+    const spikeCount = 2 + Math.floor(Math.random() * 2); // 2 or 3 spikes
+    const available = [];
+    // Spikes can land anywhere from second 3 to 14 (avoid very start/end)
+    for (let s = 3; s <= 14; s++) available.push(s);
+    const plan = new Set();
+    while (plan.size < spikeCount && available.length > 0) {
+        const idx = Math.floor(Math.random() * available.length);
+        plan.add(available[idx]);
+        available.splice(idx, 1);
+    }
+    return plan;
+}
+
+function generateSimLatency(second, spikePlan) {
     // Normal baseline: 30-70ms with jitter
     let base = 40 + Math.random() * 25;
 
-    // Inject spikes around seconds 7-9 and 12-13
-    if (second >= 7 && second <= 9) {
-        base = 130 + Math.random() * 120; // 130-250ms spike
-    } else if (second >= 12 && second <= 13) {
-        base = 110 + Math.random() * 80;  // 110-190ms spike
+    // Spike only on randomly chosen seconds
+    if (spikePlan.has(second)) {
+        base = 110 + Math.random() * 140; // 110-250ms spike
     }
 
     return Math.round(base);
@@ -168,8 +184,9 @@ export default function LatencyChart({ originLocation, monitorName }) {
     const [simLog, setSimLog] = useState([]);             // event log
     const alertSentRef = useRef(new Set());               // track which seconds already sent
     const timerRef = useRef(null);
+    const spikePlanRef = useRef(new Set());                // randomised spike seconds
 
-    /* ── Pick a random target region for the simulation ─────── */
+    /* ── Pick a random target region for the visualisation ─── */
     const simRegion = useMemo(() => {
         const regions = ALL_LOCATIONS.filter(
             (l) => l.name.toLowerCase() !== (originLocation || 'bangalore').toLowerCase()
@@ -177,8 +194,9 @@ export default function LatencyChart({ originLocation, monitorName }) {
         return regions[Math.floor(Math.random() * regions.length)]?.name || 'Tokyo';
     }, [originLocation]);
 
-    /* ── Start simulation ───────────────────────────────────── */
+    /* ── Start visualisation ─────────────────────────────────── */
     const startSim = useCallback(() => {
+        spikePlanRef.current = buildSpikePlan(); // fresh random pattern each run
         setSimMode(true);
         setSimData([]);
         setSimSecond(0);
@@ -213,7 +231,7 @@ export default function LatencyChart({ originLocation, monitorName }) {
                 return;
             }
 
-            const latency = generateSimLatency(sec);
+            const latency = generateSimLatency(sec, spikePlanRef.current);
             const point = { time: `${sec}s`, latency, second: sec };
 
             setSimData((prev) => [...prev, point]);
