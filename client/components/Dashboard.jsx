@@ -189,7 +189,7 @@ export default function Dashboard() {
                             <Activity size={12} /> Live Infrastructure
                         </div>
                         <h1 className="text-4xl sm:text-5xl font-black text-gray-900 tracking-tight leading-tight">
-                            Welcome, <span className="text-violet-600 underline decoration-violet-100 decoration-8 underline-offset-8">{user?.name?.split(' ')[0] || 'Member'}</span>
+                            Welcome, <span className="text-violet-600 underline decoration-violet-100 decoration-8 underline-offset-8">{user?.name || user?.email?.split('@')[0] || 'Member'}</span>
                         </h1>
                         <p className="text-gray-400 font-medium text-lg">Your systems are operating within optimal parameters.</p>
                     </div>

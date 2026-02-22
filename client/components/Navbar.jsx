@@ -77,10 +77,17 @@ export default function Navbar() {
                     <div className="hidden md:block h-8 w-px bg-gray-100 mx-2" />
 
                     {user ? (
-                        <div className="hidden md:flex items-center gap-4">
-                            <div className="flex flex-col items-end">
-                                <span className="text-xs font-black text-gray-900 leading-none">{user.name || 'Account'}</span>
-                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Member</span>
+                        <div className="hidden md:flex items-center gap-3">
+                            <div className="flex items-center gap-3 pl-3 pr-4 py-2 bg-gray-50 border border-gray-100 rounded-2xl">
+                                <div className="w-8 h-8 bg-violet-600 rounded-xl flex items-center justify-center text-white text-xs font-black uppercase shadow-sm">
+                                    {(user.name || user.email || '?').charAt(0)}
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-xs font-black text-gray-900 leading-none truncate max-w-[120px]">
+                                        {user.name || user.email?.split('@')[0] || 'Account'}
+                                    </span>
+                                    <span className="text-[10px] font-bold text-gray-400 truncate max-w-[120px]">{user.email}</span>
+                                </div>
                             </div>
                             <button
                                 onClick={handleLogout}
@@ -127,7 +134,18 @@ export default function Navbar() {
                     {user && <Link href="/orders" onClick={() => setMobileOpen(false)} className="block text-sm font-black uppercase tracking-widest text-gray-900">Order History</Link>}
                     <div className="pt-4 border-t border-gray-50">
                         {user ? (
-                            <button onClick={handleLogout} className="w-full text-left py-3 text-sm font-black uppercase tracking-widest text-red-500">Sign Out</button>
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 bg-violet-600 rounded-xl flex items-center justify-center text-white text-sm font-black uppercase shadow-sm">
+                                        {(user.name || user.email || '?').charAt(0)}
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-sm font-black text-gray-900">{user.name || user.email?.split('@')[0]}</span>
+                                        <span className="text-xs text-gray-400">{user.email}</span>
+                                    </div>
+                                </div>
+                                <button onClick={handleLogout} className="w-full text-left py-3 text-sm font-black uppercase tracking-widest text-red-500">Sign Out</button>
+                            </div>
                         ) : (
                             <div className="grid grid-cols-2 gap-4">
                                 <Link href="/login" onClick={() => setMobileOpen(false)} className="flex items-center justify-center h-12 border border-gray-100 rounded-2xl text-xs font-black uppercase tracking-widest">Login</Link>
