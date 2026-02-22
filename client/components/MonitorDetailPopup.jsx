@@ -6,6 +6,7 @@ import { X, Globe, Activity, Clock } from 'lucide-react';
 
 // Dynamic import — Cesium requires browser APIs (no SSR)
 const CesiumGlobe = dynamic(() => import('./CesiumGlobe'), { ssr: false });
+const IncidentLog = dynamic(() => import('./IncidentLog'), { ssr: false });
 
 export default function MonitorDetailPopup({ monitor, isOpen, onClose }) {
     // Close on ESC key
@@ -93,15 +94,9 @@ export default function MonitorDetailPopup({ monitor, isOpen, onClose }) {
                         </div>
                     </div>
 
-                    {/* Quadrant 4 — Placeholder */}
-                    <div className="bg-black flex items-center justify-center p-8">
-                        <div className="text-center">
-                            <div className="w-16 h-16 bg-white/5 rounded-3xl flex items-center justify-center mx-auto mb-4 border border-white/10">
-                                <Globe size={28} className="text-gray-600" />
-                            </div>
-                            <p className="text-sm font-bold text-gray-400">Incident Log</p>
-                            <p className="text-xs text-gray-600 mt-1">Coming soon</p>
-                        </div>
+                    {/* Quadrant 4 — Incident Log (Journey Files) */}
+                    <div className="bg-black overflow-hidden">
+                        <IncidentLog monitorId={monitor.id} />
                     </div>
                 </div>
             </div>

@@ -62,4 +62,8 @@ api.interceptors.response.use(
     }
 );
 
+// ── Journey Files Helper ─────────────────────────────────────
+export const getJourneyFiles = (monitorId) =>
+    api.get(`/monitors/${monitorId}/journey-files`).then((r) => r.data);
+
 export default api;
