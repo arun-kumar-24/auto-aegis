@@ -76,7 +76,7 @@ export default function MonitorDetailPopup({ monitor, isOpen, onClose }) {
                         </div>
                         {/* Latency Chart */}
                         <div className="flex-1 bg-white overflow-hidden">
-                            <LatencyChart originLocation={monitor.server_location} />
+                            <LatencyChart originLocation={monitor.server_location} monitorName={monitor.name} />
                         </div>
                     </div>
 

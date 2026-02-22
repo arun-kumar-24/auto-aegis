@@ -66,4 +66,8 @@ api.interceptors.response.use(
 export const getJourneyFiles = (monitorId) =>
     api.get(`/monitors/${monitorId}/journey-files`).then((r) => r.data);
 
+// ── Slack Alert Helper ───────────────────────────────────────
+export const sendSlackAlert = (payload) =>
+    api.post('/alerts/slack', payload).then((r) => r.data);
+
 export default api;

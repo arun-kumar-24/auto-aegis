@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import {
     ResponsiveContainer,
     ComposedChart,
@@ -11,8 +11,13 @@ import {
     CartesianGrid,
     Tooltip,
     Legend,
+    ReferenceLine,
+    LineChart,
+    Area,
+    AreaChart,
 } from 'recharts';
-import { BarChart3, TrendingUp } from 'lucide-react';
+import { BarChart3, TrendingUp, Play, Square, Zap } from 'lucide-react';
+import { sendSlackAlert } from '../services/api';
 
 /* ── Shared location data (same as CesiumGlobe) ─────────────── */
 const ALL_LOCATIONS = [
@@ -77,7 +82,7 @@ function latencyColor(ms) {
     return '#ef4444';                // red
 }
 
-/* ── Custom Tooltip ─────────────────────────────────────────── */
+/* ── Custom Tooltip (static chart) ──────────────────────────── */
 function CustomTooltip({ active, payload, label }) {
     if (!active || !payload?.length) return null;
     const ms = payload[0]?.value;
@@ -86,6 +91,21 @@ function CustomTooltip({ active, payload, label }) {
             <p className="text-xs font-bold text-gray-800 mb-1">{label}</p>
             <p className="text-sm font-mono" style={{ color: latencyColor(ms) }}>
                 {ms} ms
+            </p>
+        </div>
+    );
+}
+
+/* ── Custom Tooltip (visualisation) ─────────────────────────── */
+function SimTooltip({ active, payload, label }) {
+    if (!active || !payload?.length) return null;
+    const ms = payload[0]?.value;
+    const isSpike = ms > 100;
+    return (
+        <div className={`rounded-xl px-4 py-3 shadow-lg border ${isSpike ? 'bg-red-50 border-red-200' : 'bg-white border-gray-200'}`}>
+            <p className="text-xs font-bold text-gray-800 mb-1">{label}</p>
+            <p className="text-sm font-mono" style={{ color: isSpike ? '#ef4444' : '#22c55e' }}>
+                {ms} ms {isSpike ? '⚠ SPIKE' : ''}
             </p>
         </div>
     );
@@ -117,13 +137,121 @@ function RoundedBar(props) {
     );
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   LatencyChart — bar + line chart of avg latency per region
-   ═══════════════════════════════════════════════════════════════ */
-export default function LatencyChart({ originLocation }) {
-    const [chartType, setChartType] = useState('both'); // 'bar' | 'line' | 'both'
+/* ── Visualisation latency generator ────────────────────────── */
+const THRESHOLD = 100;
+const SIM_DURATION = 15; // seconds
 
-    /* Build data sorted by latency ──────────────────────────── */
+function generateSimLatency(second) {
+    // Normal baseline: 30-70ms with jitter
+    let base = 40 + Math.random() * 25;
+
+    // Inject spikes around seconds 7-9 and 12-13
+    if (second >= 7 && second <= 9) {
+        base = 130 + Math.random() * 120; // 130-250ms spike
+    } else if (second >= 12 && second <= 13) {
+        base = 110 + Math.random() * 80;  // 110-190ms spike
+    }
+
+    return Math.round(base);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LatencyChart — bar + line chart with visualisation mode
+   ═══════════════════════════════════════════════════════════════ */
+export default function LatencyChart({ originLocation, monitorName }) {
+    const [chartType, setChartType] = useState('both');
+    const [simMode, setSimMode] = useState(false);       // simulation active?
+    const [simData, setSimData] = useState([]);           // real-time points
+    const [simSecond, setSimSecond] = useState(0);
+    const [simDone, setSimDone] = useState(false);
+    const [alertsSent, setAlertsSent] = useState(0);
+    const [simLog, setSimLog] = useState([]);             // event log
+    const alertSentRef = useRef(new Set());               // track which seconds already sent
+    const timerRef = useRef(null);
+
+    /* ── Pick a random target region for the simulation ─────── */
+    const simRegion = useMemo(() => {
+        const regions = ALL_LOCATIONS.filter(
+            (l) => l.name.toLowerCase() !== (originLocation || 'bangalore').toLowerCase()
+        );
+        return regions[Math.floor(Math.random() * regions.length)]?.name || 'Tokyo';
+    }, [originLocation]);
+
+    /* ── Start simulation ───────────────────────────────────── */
+    const startSim = useCallback(() => {
+        setSimMode(true);
+        setSimData([]);
+        setSimSecond(0);
+        setSimDone(false);
+        setAlertsSent(0);
+        setSimLog([]);
+        alertSentRef.current = new Set();
+    }, []);
+
+    /* ── Stop simulation ────────────────────────────────────── */
+    const stopSim = useCallback(() => {
+        if (timerRef.current) clearInterval(timerRef.current);
+        setSimMode(false);
+        setSimDone(false);
+        setSimData([]);
+        setSimLog([]);
+        setSimSecond(0);
+        setAlertsSent(0);
+    }, []);
+
+    /* ── Simulation tick ────────────────────────────────────── */
+    useEffect(() => {
+        if (!simMode || simDone) return;
+
+        let sec = 0;
+        timerRef.current = setInterval(() => {
+            sec += 1;
+            if (sec > SIM_DURATION) {
+                clearInterval(timerRef.current);
+                setSimDone(true);
+                setSimLog((prev) => [...prev, { type: 'done', text: 'Visualisation complete.' }]);
+                return;
+            }
+
+            const latency = generateSimLatency(sec);
+            const point = { time: `${sec}s`, latency, second: sec };
+
+            setSimData((prev) => [...prev, point]);
+            setSimSecond(sec);
+
+            // Spike detection → Slack alert
+            if (latency > THRESHOLD && !alertSentRef.current.has(sec)) {
+                alertSentRef.current.add(sec);
+                setAlertsSent((n) => n + 1);
+                setSimLog((prev) => [
+                    ...prev,
+                    { type: 'alert', text: `⚠ Spike at ${sec}s → ${latency}ms → Sending Slack alert…` },
+                ]);
+
+                sendSlackAlert({
+                    region: simRegion,
+                    latency,
+                    threshold: THRESHOLD,
+                    monitorName: monitorName || 'Latency Visualisation',
+                    originLocation: originLocation || 'Bangalore',
+                }).then(() => {
+                    setSimLog((prev) => [
+                        ...prev,
+                        { type: 'success', text: `✓ Slack alert sent (${latency}ms at ${sec}s)` },
+                    ]);
+                }).catch((err) => {
+                    setSimLog((prev) => [
+                        ...prev,
+                        { type: 'error', text: `✗ Slack failed: ${err.message}` },
+                    ]);
+                });
+            }
+        }, 1000);
+
+        return () => clearInterval(timerRef.current);
+    }, [simMode, simDone, simRegion, monitorName, originLocation]);
+
+    /* ── Static chart data ──────────────────────────────────── */
     const data = useMemo(() => {
         const originName = (originLocation || 'Bangalore').trim();
         const origin = ALL_LOCATIONS.find(
@@ -135,23 +263,150 @@ export default function LatencyChart({ originLocation }) {
             .map((loc) => {
                 const distKm = haversineKm(origin.lat, origin.lon, loc.lat, loc.lon);
                 const latency = estimateLatency(distKm);
-                return {
-                    region: loc.name,
-                    latency,
-                    fill: latencyColor(latency),
-                };
+                return { region: loc.name, latency, fill: latencyColor(latency) };
             })
             .sort((a, b) => a.latency - b.latency);
     }, [originLocation]);
 
-    /* Stats ─────────────────────────────────────────────────── */
     const avgLatency = Math.round(data.reduce((s, d) => s + d.latency, 0) / data.length);
     const minEntry = data[0];
     const maxEntry = data[data.length - 1];
 
+    /* ═══════════════════════════════════════════════════════════
+       Render — Visualisation Mode
+       ═══════════════════════════════════════════════════════════ */
+    if (simMode) {
+        const progress = Math.round((simSecond / SIM_DURATION) * 100);
+        const currentLatency = simData[simData.length - 1]?.latency ?? 0;
+        const isCurrentSpike = currentLatency > THRESHOLD;
+
+        return (
+            <div className="flex flex-col h-full overflow-hidden">
+                {/* Header */}
+                <div className="shrink-0 flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
+                    <div className="flex items-center gap-2">
+                        <Zap size={14} className={simDone ? 'text-emerald-500' : 'text-amber-500 animate-pulse'} />
+                        <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                            {simDone ? 'Visualisation Complete' : 'Live Latency Visualisation'}
+                        </span>
+                        <span className="text-[10px] text-gray-400 font-mono">
+                            → {simRegion}
+                        </span>
+                    </div>
+                    <button
+                        onClick={stopSim}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold bg-gray-100 text-gray-500 hover:bg-red-100 hover:text-red-600 transition-all"
+                    >
+                        <Square size={10} />
+                        {simDone ? 'Close' : 'Stop'}
+                    </button>
+                </div>
+
+                {/* Live stats bar */}
+                <div className="shrink-0 flex items-center gap-3 px-4 py-2 border-b border-gray-100 bg-white overflow-x-auto">
+                    <StatPill label="Current" value={`${currentLatency} ms`} color={isCurrentSpike ? '#ef4444' : '#22c55e'} />
+                    <StatPill label="Threshold" value={`${THRESHOLD} ms`} color="#a78bfa" />
+                    <StatPill label="Alerts Sent" value={`${alertsSent}`} color="#f97316" />
+                    <div className="ml-auto flex items-center gap-2">
+                        <div className="w-24 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                            <div
+                                className="h-full bg-violet-400 rounded-full transition-all duration-500"
+                                style={{ width: `${progress}%` }}
+                            />
+                        </div>
+                        <span className="text-[10px] text-gray-400 font-mono">{simSecond}/{SIM_DURATION}s</span>
+                    </div>
+                </div>
+
+                {/* Real-time chart */}
+                <div className="flex-1 min-h-0 px-2 py-3">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={simData} margin={{ top: 8, right: 12, bottom: 8, left: 4 }}>
+                            <defs>
+                                <linearGradient id="simGrad" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="#a78bfa" stopOpacity={0.3} />
+                                    <stop offset="95%" stopColor="#a78bfa" stopOpacity={0} />
+                                </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" vertical={false} />
+                            <XAxis
+                                dataKey="time"
+                                tick={{ fontSize: 10, fill: '#6b7280' }}
+                                axisLine={{ stroke: 'rgba(0,0,0,0.08)' }}
+                                tickLine={false}
+                            />
+                            <YAxis
+                                tick={{ fontSize: 10, fill: '#6b7280' }}
+                                axisLine={false}
+                                tickLine={false}
+                                unit=" ms"
+                                width={50}
+                                domain={[0, 300]}
+                            />
+                            <Tooltip content={<SimTooltip />} />
+                            <ReferenceLine
+                                y={THRESHOLD}
+                                stroke="#ef4444"
+                                strokeDasharray="6 3"
+                                strokeWidth={1.5}
+                                label={{ value: `${THRESHOLD}ms threshold`, position: 'right', fontSize: 9, fill: '#ef4444' }}
+                            />
+                            <Area
+                                type="monotone"
+                                dataKey="latency"
+                                stroke="#a78bfa"
+                                strokeWidth={2.5}
+                                fill="url(#simGrad)"
+                                dot={(props) => {
+                                    const { cx, cy, payload } = props;
+                                    const spike = payload.latency > THRESHOLD;
+                                    return (
+                                        <circle
+                                            key={props.index}
+                                            cx={cx}
+                                            cy={cy}
+                                            r={spike ? 5 : 3}
+                                            fill={spike ? '#ef4444' : '#a78bfa'}
+                                            stroke={spike ? '#fca5a5' : '#fff'}
+                                            strokeWidth={2}
+                                        />
+                                    );
+                                }}
+                                isAnimationActive={false}
+                            />
+                        </AreaChart>
+                    </ResponsiveContainer>
+                </div>
+
+                {/* Event log */}
+                <div className="shrink-0 max-h-24 overflow-y-auto px-4 py-2 border-t border-gray-100 bg-gray-50/60 text-[10px] font-mono space-y-0.5 incident-log-content">
+                    {simLog.length === 0 && (
+                        <p className="text-gray-400">Waiting for events…</p>
+                    )}
+                    {simLog.map((entry, i) => (
+                        <p
+                            key={i}
+                            className={
+                                entry.type === 'alert' ? 'text-amber-600' :
+                                entry.type === 'success' ? 'text-emerald-600' :
+                                entry.type === 'error' ? 'text-red-500' :
+                                'text-gray-500'
+                            }
+                        >
+                            {entry.text}
+                        </p>
+                    ))}
+                </div>
+            </div>
+        );
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       Render — Static Regional Chart
+       ═══════════════════════════════════════════════════════════ */
     return (
         <div className="flex flex-col h-full overflow-hidden">
-            {/* ── Header ────────────────────────────────────── */}
+            {/* Header */}
             <div className="shrink-0 flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
                 <div className="flex items-center gap-2">
                     <BarChart3 size={14} className="text-violet-500" />
@@ -160,46 +415,53 @@ export default function LatencyChart({ originLocation }) {
                     </span>
                 </div>
 
-                {/* Chart type toggle */}
-                <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5">
-                    {[
-                        { key: 'bar', icon: BarChart3, tip: 'Bar chart' },
-                        { key: 'line', icon: TrendingUp, tip: 'Line chart' },
-                        { key: 'both', icon: null, tip: 'Combined' },
-                    ].map(({ key, icon: Icon, tip }) => (
-                        <button
-                            key={key}
-                            onClick={() => setChartType(key)}
-                            title={tip}
-                            className={`px-2 py-1 rounded-md text-[10px] font-bold transition-all ${
-                                chartType === key
-                                    ? 'bg-violet-100 text-violet-700'
-                                    : 'text-gray-400 hover:text-gray-600'
-                            }`}
-                        >
-                            {Icon ? <Icon size={12} /> : 'Both'}
-                        </button>
-                    ))}
+                <div className="flex items-center gap-2">
+                    {/* Visualise Latency button */}
+                    <button
+                        onClick={startSim}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold bg-amber-50 text-amber-600 border border-amber-200 hover:bg-amber-100 transition-all"
+                        title="Run 15s latency visualisation with Slack alerts"
+                    >
+                        <Play size={10} fill="currentColor" />
+                        Visualise Latency
+                    </button>
+
+                    {/* Chart type toggle */}
+                    <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5">
+                        {[
+                            { key: 'bar', icon: BarChart3, tip: 'Bar chart' },
+                            { key: 'line', icon: TrendingUp, tip: 'Line chart' },
+                            { key: 'both', icon: null, tip: 'Combined' },
+                        ].map(({ key, icon: Icon, tip }) => (
+                            <button
+                                key={key}
+                                onClick={() => setChartType(key)}
+                                title={tip}
+                                className={`px-2 py-1 rounded-md text-[10px] font-bold transition-all ${
+                                    chartType === key
+                                        ? 'bg-violet-100 text-violet-700'
+                                        : 'text-gray-400 hover:text-gray-600'
+                                }`}
+                            >
+                                {Icon ? <Icon size={12} /> : 'Both'}
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </div>
 
-            {/* ── Stat pills ────────────────────────────────── */}
+            {/* Stat pills */}
             <div className="shrink-0 flex items-center gap-3 px-4 py-2 border-b border-gray-100 bg-white overflow-x-auto">
                 <StatPill label="Average" value={`${avgLatency} ms`} color="#a78bfa" />
                 <StatPill label="Fastest" value={`${minEntry?.region} · ${minEntry?.latency} ms`} color="#22c55e" />
                 <StatPill label="Slowest" value={`${maxEntry?.region} · ${maxEntry?.latency} ms`} color="#ef4444" />
             </div>
 
-            {/* ── Chart area ────────────────────────────────── */}
+            {/* Chart area */}
             <div className="flex-1 min-h-0 px-2 py-3">
                 <ResponsiveContainer width="100%" height="100%">
                     <ComposedChart data={data} margin={{ top: 8, right: 12, bottom: 60, left: 4 }}>
-                        <CartesianGrid
-                            strokeDasharray="3 3"
-                            stroke="rgba(0,0,0,0.06)"
-                            vertical={false}
-                        />
-
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" vertical={false} />
                         <XAxis
                             dataKey="region"
                             tick={{ fontSize: 9, fill: '#6b7280', fontWeight: 600 }}
@@ -210,7 +472,6 @@ export default function LatencyChart({ originLocation }) {
                             tickLine={false}
                             height={60}
                         />
-
                         <YAxis
                             tick={{ fontSize: 10, fill: '#6b7280' }}
                             axisLine={false}
@@ -218,12 +479,8 @@ export default function LatencyChart({ originLocation }) {
                             unit=" ms"
                             width={55}
                         />
-
                         <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(0,0,0,0.04)' }} />
-
-                        <Legend
-                            wrapperStyle={{ fontSize: 10, color: '#9ca3af', paddingTop: 4 }}
-                        />
+                        <Legend wrapperStyle={{ fontSize: 10, color: '#9ca3af', paddingTop: 4 }} />
 
                         {(chartType === 'bar' || chartType === 'both') && (
                             <Bar

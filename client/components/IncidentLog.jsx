@@ -88,6 +88,9 @@ export default function IncidentLog({ monitorId }) {
     /* ── Determine if the file looks like markdown ──────────── */
     const isMarkdown = (name) => /\.(md|mdx|markdown)$/i.test(name || '');
 
+    /* ── Determine if the file is an image ───────────────────── */
+    const isImage = (name) => /\.(png|jpg|jpeg|gif|webp|svg)$/i.test(name || '');
+
     /* ── Render states ──────────────────────────────────────── */
     if (loading) {
         return (
@@ -172,6 +175,15 @@ export default function IncidentLog({ monitorId }) {
                     <div className="flex items-center gap-2 text-gray-400 text-xs">
                         <Loader2 size={14} className="animate-spin" />
                         Loading file…
+                    </div>
+                ) : isImage(selectedFile?.name) ? (
+                    <div className="flex flex-col items-center gap-3">
+                        <img
+                            src={selectedFile.signedUrl}
+                            alt={selectedFile.name}
+                            className="max-w-full max-h-[70vh] rounded-xl border border-gray-200 shadow-sm object-contain"
+                        />
+                        <span className="text-[10px] text-gray-400 font-mono">{selectedFile.name}</span>
                     </div>
                 ) : isMarkdown(selectedFile?.name) ? (
                     <div className="prose prose-sm max-w-none

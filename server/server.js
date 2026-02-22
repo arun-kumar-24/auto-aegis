@@ -7,6 +7,7 @@ import { supabase } from './lib/supabase.js';
 import authRoutes from './routes/authRoutes.js';
 import monitorRoutes from './routes/monitorRoutes.js';
 import ingestRoutes from './routes/ingestRoutes.js';
+import alertRoutes from './routes/alertRoutes.js';
 
 dotenv.config();
 
@@ -27,6 +28,7 @@ app.use(cookieParser());
 app.use('/api/auth', authRoutes);
 app.use('/api/monitors', monitorRoutes);
 app.use('/api/ingest', ingestRoutes);
+app.use('/api/alerts', alertRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
