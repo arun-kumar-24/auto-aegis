@@ -51,7 +51,16 @@ export const signup = async (req, res) => {
             throw error;
         }
 
-        res.status(201).json({ message: 'User created successfully', user: { id: data.id, email: data.email } });
+        const accessToken = generateAccessToken(data);
+        const refreshToken = generateRefreshToken(data);
+
+        setCookies(res, accessToken, refreshToken);
+
+        res.status(201).json({
+            message: 'User created successfully',
+            user: { id: data.id, email: data.email },
+            token: accessToken
+        });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -81,7 +90,11 @@ export const login = async (req, res) => {
 
         setCookies(res, accessToken, refreshToken);
 
-        res.json({ message: 'Login successful', user: { id: user.id, email: user.email } });
+        res.json({
+            message: 'Login successful',
+            user: { id: user.id, email: user.email },
+            token: accessToken
+        });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -129,7 +142,7 @@ export const getMe = async (req, res) => {
             .single();
 
         if (error) throw error;
-        res.json(user);
+        res.json({ user });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
