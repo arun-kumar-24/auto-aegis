@@ -19,6 +19,16 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import MonitorDetailPopup from './MonitorDetailPopup';
+import { MapPin } from 'lucide-react';
+
+const SERVER_LOCATIONS = [
+    "Bangalore", "Mumbai", "Delhi", "Colombo", "Singapore",
+    "Kuala Lumpur", "Jakarta", "Bangkok", "Dubai", "Riyadh",
+    "Tokyo", "Seoul", "Taipei", "Manila", "Sydney",
+    "London", "Frankfurt", "Paris", "Amsterdam", "Madrid", "Rome",
+    "New York", "Washington DC", "Chicago", "San Francisco", "Seattle", "Toronto",
+    "Sao Paulo", "Buenos Aires", "Cape Town", "Nairobi", "Lagos"
+];
 
 function MonitorCard({ monitor, onUpdate, onViewDetails }) {
     const statusColor = monitor.is_active ? 'text-emerald-500' : 'text-zinc-500';
@@ -69,6 +79,7 @@ function MonitorCard({ monitor, onUpdate, onViewDetails }) {
 function NewMonitorModal({ isOpen, onClose, onSuccess }) {
     const [name, setName] = useState('');
     const [url, setUrl] = useState('');
+    const [serverLocation, setServerLocation] = useState('');
     const [loading, setLoading] = useState(false);
 
     if (!isOpen) return null;
@@ -77,12 +88,13 @@ function NewMonitorModal({ isOpen, onClose, onSuccess }) {
         e.preventDefault();
         setLoading(true);
         try {
-            await api.post('/monitors', { name, target_url: url });
+            await api.post('/monitors', { name, target_url: url, server_location: serverLocation });
             toast.success('Monitor created successfully');
             onSuccess();
             onClose();
             setName('');
             setUrl('');
+            setServerLocation('');
         } catch (err) {
             toast.error(err.response?.data?.error || 'Failed to create monitor');
         } finally {
@@ -128,6 +140,24 @@ function NewMonitorModal({ isOpen, onClose, onSuccess }) {
                                     placeholder="https://api.example.com"
                                     className="w-full bg-gray-50 border-gray-100 rounded-2xl pl-14 pr-5 py-4 text-gray-900 placeholder:text-gray-300 focus:ring-4 focus:ring-violet-500/10 focus:border-violet-200 border outline-none transition-all font-medium"
                                 />
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Server Location</label>
+                            <div className="relative">
+                                <MapPin size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-300 pointer-events-none" />
+                                <select
+                                    required
+                                    value={serverLocation}
+                                    onChange={e => setServerLocation(e.target.value)}
+                                    className="w-full bg-gray-50 border-gray-100 rounded-2xl pl-14 pr-5 py-4 text-gray-900 focus:ring-4 focus:ring-violet-500/10 focus:border-violet-200 border outline-none transition-all font-medium appearance-none cursor-pointer"
+                                >
+                                    <option value="" disabled>Select deployment region</option>
+                                    {SERVER_LOCATIONS.map(loc => (
+                                        <option key={loc} value={loc}>{loc}</option>
+                                    ))}
+                                </select>
                             </div>
                         </div>
 
