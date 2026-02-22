@@ -10,9 +10,10 @@
  *   npm run shadow -- https://example.com
  *
  * Environment:
- *   WEBHOOK_URL     — POST endpoint for dispatching results
- *   GROQ_API_KEY    — For AI diagnostics (loaded from .env)
- *   RECORD_DURATION — Override recording duration in seconds (default: 30)
+ *   WEBHOOK_URL      — Server endpoint (e.g. http://localhost:3001/api/ingest/artifacts)
+ *   AEGIS_API_KEY    — API key for the server (x-api-key header)
+ *   GROQ_API_KEY     — For AI diagnostics (loaded from .env)
+ *   RECORD_DURATION  — Override recording duration in seconds (default: 30)
  */
 
 import chalk from 'chalk';
@@ -35,6 +36,7 @@ loadEnvFile();
 
 const RECORD_DURATION_S = parseInt(process.env.RECORD_DURATION || '30', 10);
 const WEBHOOK_URL = process.env.WEBHOOK_URL || '';
+const AEGIS_API_KEY = process.env.AEGIS_API_KEY || '';
 const START_URL = process.argv[2] || null;
 const CODEBASE_DIR = parseFlag('--codebase') || DOM_DIR;
 
@@ -73,8 +75,9 @@ async function main() {
       reportPath = await phaseDiagnose();
     }
   } finally {
-    // ━━━ Phase 4: Dispatcher ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    await phaseDispatch(summaryPath, reportPath);
+    // ━━━ Phase 4: Dispatch to Server ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    await phaseDispatch(goldenPath, summaryPath, reportPath);
+
     printFooter(goldenPath, summaryPath, reportPath);
   }
 }
@@ -218,43 +221,88 @@ async function phaseDiagnose() {
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  Phase 4: Dispatcher
+//  Phase 4: Dispatch to Server
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-async function phaseDispatch(summaryPath, reportPath) {
+async function phaseDispatch(goldenPath, summaryPath, reportPath) {
   if (!WEBHOOK_URL) {
     console.log(chalk.dim('\n  No WEBHOOK_URL configured — skipping dispatch.'));
     return;
   }
 
-  printPhaseHeader(4, 'Dispatching Results', 'blue');
+  printPhaseHeader(4, 'Dispatching to Server', 'blue');
 
   const spinner = ora({
-    text: chalk.blue(`Sending logs to endpoint...`),
+    text: chalk.blue('Sending all artifacts to server...'),
     color: 'blue',
     prefixText: ' ',
   }).start();
 
   try {
-    const payload = { timestamp: new Date().toISOString() };
+    const logsDir = resolve(DOM_DIR, 'logs');
 
+    // Build the artifacts payload
+    const payload = {
+      timestamp: new Date().toISOString(),
+    };
+
+    // Read run summary for IDs
     if (summaryPath && existsSync(summaryPath)) {
-      payload.runSummary = JSON.parse(readFileSync(summaryPath, 'utf-8'));
+      const summary = JSON.parse(readFileSync(summaryPath, 'utf-8'));
+      payload.runId = summary.runId;
+      payload.journeyId = summary.goldenSessionId;
+      payload.runSummary = summary;
     }
+
+    // Golden session
+    if (goldenPath && existsSync(goldenPath)) {
+      payload.goldenSession = JSON.parse(readFileSync(goldenPath, 'utf-8'));
+      // Fallback journeyId from golden session
+      if (!payload.journeyId) {
+        payload.journeyId = payload.goldenSession.metadata?.sessionId;
+      }
+    }
+
+    // Anomalies
+    const anomaliesPath = join(logsDir, 'anomalies.json');
+    if (existsSync(anomaliesPath)) {
+      payload.anomalies = JSON.parse(readFileSync(anomaliesPath, 'utf-8'));
+    }
+
+    // Crash report
+    const crashPath = join(logsDir, 'crash_report.json');
+    if (existsSync(crashPath)) {
+      payload.crashReport = JSON.parse(readFileSync(crashPath, 'utf-8'));
+    }
+
+    // Incident report (markdown string)
     if (reportPath && existsSync(reportPath)) {
       payload.incidentReport = readFileSync(reportPath, 'utf-8');
     }
 
+    // Network HAR
+    const harPath = join(logsDir, 'network.har');
+    if (existsSync(harPath)) {
+      payload.networkHar = JSON.parse(readFileSync(harPath, 'utf-8'));
+    }
+
+    const headers = { 'Content-Type': 'application/json' };
+    if (AEGIS_API_KEY) {
+      headers['x-api-key'] = AEGIS_API_KEY;
+    }
+
     const response = await fetch(WEBHOOK_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify(payload),
     });
 
     if (response.ok) {
-      spinner.succeed(chalk.green(`Logs dispatched to endpoint (${response.status}).`));
+      const result = await response.json().catch(() => ({}));
+      spinner.succeed(chalk.green(`Artifacts dispatched → ${result.folder || 'server'} (${response.status})`));
     } else {
-      spinner.warn(chalk.yellow(`Endpoint responded with ${response.status}.`));
+      const errText = await response.text().catch(() => '');
+      spinner.warn(chalk.yellow(`Server responded with ${response.status}: ${errText.substring(0, 100)}`));
     }
   } catch (err) {
     spinner.fail(chalk.red(`Dispatch failed: ${err.message}`));
@@ -277,9 +325,7 @@ function printBanner() {
   console.log(chalk.dim(`  Target : ${START_URL || 'none'}`));
   console.log(chalk.dim(`  Record : ${RECORD_DURATION_S}s`));
   console.log(chalk.dim(`  Codebase: ${CODEBASE_DIR}`));
-  if (WEBHOOK_URL) {
-    console.log(chalk.dim(`  Webhook: ${WEBHOOK_URL}`));
-  }
+  if (WEBHOOK_URL) console.log(chalk.dim(`  Webhook : ${WEBHOOK_URL}`));
   console.log();
 }
 
@@ -298,7 +344,7 @@ function printFooter(goldenPath, summaryPath, reportPath) {
   if (goldenPath) console.log(chalk.dim(`  📄 Golden  : ${goldenPath}`));
   if (summaryPath && existsSync(summaryPath)) console.log(chalk.dim(`  📄 Summary : ${summaryPath}`));
   if (reportPath && existsSync(reportPath)) console.log(chalk.dim(`  📄 Report  : ${reportPath}`));
-  if (WEBHOOK_URL) console.log(chalk.dim(`  🔗 Webhook : ${WEBHOOK_URL}`));
+  if (WEBHOOK_URL) console.log(chalk.dim(`  🔗 Server  : ${WEBHOOK_URL}`));
   console.log();
 }
 
