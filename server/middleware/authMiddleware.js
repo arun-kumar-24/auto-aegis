@@ -4,7 +4,13 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 export const authenticateToken = (req, res, next) => {
-    const token = req.cookies.accessToken;
+    let token = req.cookies.accessToken;
+
+    // Also check for Authorization header
+    const authHeader = req.headers['authorization'];
+    if (!token && authHeader && authHeader.startsWith('Bearer ')) {
+        token = authHeader.split(' ')[1];
+    }
 
     if (!token) {
         return res.status(401).json({ error: 'Access denied. No token provided.' });
