@@ -1,11 +1,11 @@
-# auto-aegis
+# aegis_auto
 
 Autonomous synthetic monitoring — record user journeys, replay with observability, diagnose failures with AI, and dispatch reports to your endpoint.
 
 ## Install
 
 ```bash
-npm install auto-aegis
+npm install aegis_auto
 ```
 
 > **Requires Node.js ≥ 18** (uses native `fetch`).
@@ -37,7 +37,7 @@ RECORD_DURATION=30                    # Optional — recording time in seconds
 ## Programmatic Usage
 
 ```js
-import { SessionRecorder } from 'auto-aegis/recorder';
+import { SessionRecorder } from 'aegis_auto/recorder';
 
 const recorder = new SessionRecorder({
   outputDir: './my-sessions',

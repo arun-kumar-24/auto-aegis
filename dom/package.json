@@ -1,5 +1,5 @@
 {
-  "name": "auto-aegis",
+  "name": "aegis_auto",
   "version": "1.0.0",
   "description": "Autonomous synthetic monitoring — record user journeys, replay with observability, diagnose failures with AI, and dispatch reports to your endpoint.",
   "type": "module",
