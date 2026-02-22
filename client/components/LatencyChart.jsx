@@ -82,8 +82,8 @@ function CustomTooltip({ active, payload, label }) {
     if (!active || !payload?.length) return null;
     const ms = payload[0]?.value;
     return (
-        <div className="bg-gray-900 border border-white/10 rounded-xl px-4 py-3 shadow-2xl">
-            <p className="text-xs font-bold text-white mb-1">{label}</p>
+        <div className="bg-white border border-gray-200 rounded-xl px-4 py-3 shadow-lg">
+            <p className="text-xs font-bold text-gray-800 mb-1">{label}</p>
             <p className="text-sm font-mono" style={{ color: latencyColor(ms) }}>
                 {ms} ms
             </p>
@@ -152,16 +152,16 @@ export default function LatencyChart({ originLocation }) {
     return (
         <div className="flex flex-col h-full overflow-hidden">
             {/* ── Header ────────────────────────────────────── */}
-            <div className="shrink-0 flex items-center justify-between px-4 py-3 border-b border-white/10 bg-black/40">
+            <div className="shrink-0 flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
                 <div className="flex items-center gap-2">
-                    <BarChart3 size={14} className="text-violet-400" />
-                    <span className="text-[10px] font-black text-white/60 uppercase tracking-widest">
+                    <BarChart3 size={14} className="text-violet-500" />
+                    <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
                         Regional Latency
                     </span>
                 </div>
 
                 {/* Chart type toggle */}
-                <div className="flex items-center gap-1 bg-white/5 rounded-lg p-0.5">
+                <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5">
                     {[
                         { key: 'bar', icon: BarChart3, tip: 'Bar chart' },
                         { key: 'line', icon: TrendingUp, tip: 'Line chart' },
@@ -173,8 +173,8 @@ export default function LatencyChart({ originLocation }) {
                             title={tip}
                             className={`px-2 py-1 rounded-md text-[10px] font-bold transition-all ${
                                 chartType === key
-                                    ? 'bg-violet-500/25 text-violet-300'
-                                    : 'text-gray-500 hover:text-gray-300'
+                                    ? 'bg-violet-100 text-violet-700'
+                                    : 'text-gray-400 hover:text-gray-600'
                             }`}
                         >
                             {Icon ? <Icon size={12} /> : 'Both'}
@@ -184,7 +184,7 @@ export default function LatencyChart({ originLocation }) {
             </div>
 
             {/* ── Stat pills ────────────────────────────────── */}
-            <div className="shrink-0 flex items-center gap-3 px-4 py-2 border-b border-white/5 bg-black/20 overflow-x-auto">
+            <div className="shrink-0 flex items-center gap-3 px-4 py-2 border-b border-gray-100 bg-white overflow-x-auto">
                 <StatPill label="Average" value={`${avgLatency} ms`} color="#a78bfa" />
                 <StatPill label="Fastest" value={`${minEntry?.region} · ${minEntry?.latency} ms`} color="#22c55e" />
                 <StatPill label="Slowest" value={`${maxEntry?.region} · ${maxEntry?.latency} ms`} color="#ef4444" />
@@ -196,7 +196,7 @@ export default function LatencyChart({ originLocation }) {
                     <ComposedChart data={data} margin={{ top: 8, right: 12, bottom: 60, left: 4 }}>
                         <CartesianGrid
                             strokeDasharray="3 3"
-                            stroke="rgba(255,255,255,0.05)"
+                            stroke="rgba(0,0,0,0.06)"
                             vertical={false}
                         />
 
@@ -206,7 +206,7 @@ export default function LatencyChart({ originLocation }) {
                             interval={0}
                             angle={-45}
                             textAnchor="end"
-                            axisLine={{ stroke: 'rgba(255,255,255,0.08)' }}
+                            axisLine={{ stroke: 'rgba(0,0,0,0.08)' }}
                             tickLine={false}
                             height={60}
                         />
@@ -219,7 +219,7 @@ export default function LatencyChart({ originLocation }) {
                             width={55}
                         />
 
-                        <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
+                        <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(0,0,0,0.04)' }} />
 
                         <Legend
                             wrapperStyle={{ fontSize: 10, color: '#9ca3af', paddingTop: 4 }}
@@ -247,7 +247,7 @@ export default function LatencyChart({ originLocation }) {
                                 stroke="#a78bfa"
                                 strokeWidth={2}
                                 dot={{ r: 2.5, fill: '#a78bfa', strokeWidth: 0 }}
-                                activeDot={{ r: 5, fill: '#a78bfa', stroke: '#1e1b4b', strokeWidth: 2 }}
+                                activeDot={{ r: 5, fill: '#a78bfa', stroke: '#fff', strokeWidth: 2 }}
                                 isAnimationActive={true}
                                 animationDuration={800}
                             />
@@ -262,10 +262,10 @@ export default function LatencyChart({ originLocation }) {
 /* ── Small stat pill ────────────────────────────────────────── */
 function StatPill({ label, value, color }) {
     return (
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 whitespace-nowrap">
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-50 border border-gray-200 whitespace-nowrap">
             <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: color }} />
-            <span className="text-[10px] text-gray-500 font-semibold">{label}</span>
-            <span className="text-[11px] font-bold text-gray-300">{value}</span>
+            <span className="text-[10px] text-gray-400 font-semibold">{label}</span>
+            <span className="text-[11px] font-bold text-gray-700">{value}</span>
         </div>
     );
 }

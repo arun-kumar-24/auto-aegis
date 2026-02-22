@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import { X, Globe, Activity, Clock } from 'lucide-react';
+import { X, Globe } from 'lucide-react';
 
 // Dynamic import — Cesium requires browser APIs (no SSR)
 const CesiumGlobe = dynamic(() => import('./CesiumGlobe'), { ssr: false });
@@ -35,17 +35,17 @@ export default function MonitorDetailPopup({ monitor, isOpen, onClose }) {
     const statusLabel = monitor.is_active ? 'Active' : 'Inactive';
 
     return (
-        <div className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[200] bg-black/30 backdrop-blur-sm animate-in fade-in duration-200">
             {/* Full-screen container */}
-            <div className="absolute inset-0 flex flex-col bg-black">
+            <div className="absolute inset-0 flex flex-col bg-white">
                 {/* Top bar */}
-                <div className="flex items-center justify-between px-8 py-4 border-b border-white/10 bg-black/80 backdrop-blur-md shrink-0">
+                <div className="flex items-center justify-between px-8 py-4 border-b border-gray-200 bg-white shrink-0">
                     <div className="flex items-center gap-4">
                         <div className={`w-10 h-10 rounded-2xl flex items-center justify-center border ${statusBg}`}>
                             <Globe size={18} className={statusColor} />
                         </div>
                         <div>
-                            <h2 className="text-lg font-black text-white tracking-tight">{monitor.name}</h2>
+                            <h2 className="text-lg font-black text-gray-900 tracking-tight">{monitor.name}</h2>
                             <p className="text-xs text-gray-500 font-medium">{monitor.target_url}</p>
                         </div>
                         <span className={`ml-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${statusBg} ${statusColor}`}>
@@ -54,43 +54,34 @@ export default function MonitorDetailPopup({ monitor, isOpen, onClose }) {
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-3 hover:bg-white/10 rounded-2xl text-gray-500 hover:text-white transition-all"
+                        className="p-3 hover:bg-gray-100 rounded-2xl text-gray-400 hover:text-gray-700 transition-all"
                         title="Close (Esc)"
                     >
                         <X size={20} />
                     </button>
                 </div>
 
-                {/* 2x2 Grid */}
-                <div className="flex-1 grid grid-cols-2 grid-rows-2 gap-[1px] bg-white/5 overflow-hidden">
-                    {/* Quadrant 1 — Globe */}
-                    <div className="bg-gray-950 relative overflow-hidden">
-                        <div className="absolute top-4 left-4 z-10 px-3 py-1 rounded-full bg-black/50 backdrop-blur-sm border border-white/10">
-                            <span className="text-[10px] font-black text-white/70 uppercase tracking-widest">
-                                Latency Map — Origin: {monitor.server_location || 'Default'}
-                            </span>
-                        </div>
-                        <CesiumGlobe originLocation={monitor.server_location} />
-                    </div>
-
-                    {/* Quadrant 2 — Placeholder */}
-                    <div className="bg-black flex items-center justify-center p-8">
-                        <div className="text-center">
-                            <div className="w-16 h-16 bg-white/5 rounded-3xl flex items-center justify-center mx-auto mb-4 border border-white/10">
-                                <Activity size={28} className="text-gray-600" />
+                {/* Two-column layout: Left (Globe + Chart) | Right (Journey Files full height) */}
+                <div className="flex-1 grid grid-cols-2 gap-[1px] bg-gray-200 overflow-hidden">
+                    {/* Left column — Globe (top) + Latency Chart (bottom) */}
+                    <div className="flex flex-col gap-[1px] bg-gray-200 overflow-hidden">
+                        {/* Globe */}
+                        <div className="flex-1 bg-gray-950 relative overflow-hidden">
+                            <div className="absolute top-4 left-4 z-10 px-3 py-1 rounded-full bg-black/50 backdrop-blur-sm border border-white/10">
+                                <span className="text-[10px] font-black text-white/70 uppercase tracking-widest">
+                                    Latency Map — Origin: {monitor.server_location || 'Default'}
+                                </span>
                             </div>
-                            <p className="text-sm font-bold text-gray-400">Performance Metrics</p>
-                            <p className="text-xs text-gray-600 mt-1">Coming soon</p>
+                            <CesiumGlobe originLocation={monitor.server_location} />
+                        </div>
+                        {/* Latency Chart */}
+                        <div className="flex-1 bg-white overflow-hidden">
+                            <LatencyChart originLocation={monitor.server_location} />
                         </div>
                     </div>
 
-                    {/* Quadrant 3 — Regional Latency Chart */}
-                    <div className="bg-black overflow-hidden">
-                        <LatencyChart originLocation={monitor.server_location} />
-                    </div>
-
-                    {/* Quadrant 4 — Incident Log (Journey Files) */}
-                    <div className="bg-black overflow-hidden">
+                    {/* Right column — Journey Files (full height) */}
+                    <div className="bg-white overflow-hidden">
                         <IncidentLog monitorId={monitor.id} />
                     </div>
                 </div>

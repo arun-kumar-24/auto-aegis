@@ -121,72 +121,72 @@ export default function IncidentLog({ monitorId }) {
     return (
         <div className="flex flex-col h-full overflow-hidden">
             {/* ── Header bar ────────────────────────────────────── */}
-            <div className="shrink-0 flex items-center gap-2 px-4 py-3 border-b border-white/10 bg-black/40">
-                <FolderOpen size={14} className="text-violet-400" />
-                <span className="text-[10px] font-black text-white/60 uppercase tracking-widest">
-                    Incident Log
+            <div className="shrink-0 flex items-center gap-2 px-4 py-3 border-b border-gray-200 bg-gray-50">
+                <FolderOpen size={14} className="text-violet-500" />
+                <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                    Journey Files
                 </span>
                 {folderName && (
-                    <span className="ml-auto text-[10px] text-gray-600 font-mono truncate max-w-[200px]" title={folderName}>
+                    <span className="ml-auto text-[10px] text-gray-400 font-mono truncate max-w-[200px]" title={folderName}>
                         {folderName}
                     </span>
                 )}
             </div>
 
-            {/* ── File-switcher bar ─────────────────────────────── */}
-            <div className="shrink-0 flex items-center gap-1.5 px-4 py-2 overflow-x-auto border-b border-white/5 bg-black/20 scrollbar-thin">
+            {/* ── File-switcher bar with per-file download ──────── */}
+            <div className="shrink-0 flex items-center gap-1.5 px-4 py-2 overflow-x-auto border-b border-gray-100 bg-white scrollbar-thin">
                 {files.map((file) => {
                     const active = selectedFile?.name === file.name;
                     return (
-                        <button
-                            key={file.name}
-                            onClick={() => setSelectedFile(file)}
-                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold whitespace-nowrap transition-all
-                                ${active
-                                    ? 'bg-violet-500/20 text-violet-300 border border-violet-500/30'
-                                    : 'bg-white/5 text-gray-400 border border-transparent hover:bg-white/10 hover:text-gray-200'
-                                }`}
-                        >
-                            <FileText size={12} />
-                            {file.name}
-                        </button>
+                        <div key={file.name} className="flex items-center gap-0.5 shrink-0">
+                            <button
+                                onClick={() => setSelectedFile(file)}
+                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-l-lg text-[11px] font-semibold whitespace-nowrap transition-all
+                                    ${active
+                                        ? 'bg-violet-100 text-violet-700 border border-r-0 border-violet-300'
+                                        : 'bg-gray-100 text-gray-500 border border-r-0 border-gray-200 hover:bg-gray-200 hover:text-gray-700'
+                                    }`}
+                            >
+                                <FileText size={12} />
+                                {file.name}
+                            </button>
+                            <button
+                                onClick={(e) => { e.stopPropagation(); handleDownload(file); }}
+                                title={`Download ${file.name}`}
+                                className={`px-1.5 py-1.5 rounded-r-lg text-[11px] transition-all
+                                    ${active
+                                        ? 'bg-violet-100 border border-l-0 border-violet-300 text-violet-500 hover:text-emerald-600 hover:bg-emerald-100'
+                                        : 'bg-gray-100 border border-l-0 border-gray-200 text-gray-400 hover:text-emerald-600 hover:bg-emerald-100'
+                                    }`}
+                            >
+                                <Download size={11} />
+                            </button>
+                        </div>
                     );
                 })}
-
-                {/* Download button for selected file */}
-                {selectedFile && (
-                    <button
-                        onClick={() => handleDownload(selectedFile)}
-                        className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold bg-white/5 text-gray-400 border border-transparent hover:bg-emerald-500/20 hover:text-emerald-300 hover:border-emerald-500/30 transition-all whitespace-nowrap"
-                        title={`Download ${selectedFile.name}`}
-                    >
-                        <Download size={12} />
-                        Download
-                    </button>
-                )}
             </div>
 
             {/* ── File content viewer ───────────────────────────── */}
             <div className="flex-1 overflow-y-auto px-5 py-4 incident-log-content">
                 {contentLoading ? (
-                    <div className="flex items-center gap-2 text-gray-500 text-xs">
+                    <div className="flex items-center gap-2 text-gray-400 text-xs">
                         <Loader2 size={14} className="animate-spin" />
                         Loading file…
                     </div>
                 ) : isMarkdown(selectedFile?.name) ? (
-                    <div className="prose prose-invert prose-sm max-w-none
-                        prose-headings:text-gray-200 prose-headings:font-black
-                        prose-p:text-gray-400 prose-p:leading-relaxed
-                        prose-a:text-violet-400 prose-a:no-underline hover:prose-a:underline
-                        prose-code:text-emerald-300 prose-code:bg-white/5 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
-                        prose-pre:bg-white/5 prose-pre:border prose-pre:border-white/10 prose-pre:rounded-xl
-                        prose-strong:text-gray-200
-                        prose-li:text-gray-400
-                        prose-blockquote:border-violet-500/40 prose-blockquote:text-gray-500
-                        prose-table:text-gray-400
-                        prose-th:text-gray-300 prose-th:border-white/10
-                        prose-td:border-white/10
-                        prose-hr:border-white/10
+                    <div className="prose prose-sm max-w-none
+                        prose-headings:text-gray-800 prose-headings:font-black
+                        prose-p:text-gray-600 prose-p:leading-relaxed
+                        prose-a:text-violet-600 prose-a:no-underline hover:prose-a:underline
+                        prose-code:text-emerald-700 prose-code:bg-gray-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
+                        prose-pre:bg-gray-50 prose-pre:border prose-pre:border-gray-200 prose-pre:rounded-xl
+                        prose-strong:text-gray-800
+                        prose-li:text-gray-600
+                        prose-blockquote:border-violet-400 prose-blockquote:text-gray-500
+                        prose-table:text-gray-600
+                        prose-th:text-gray-700 prose-th:border-gray-200
+                        prose-td:border-gray-200
+                        prose-hr:border-gray-200
                         prose-img:rounded-xl"
                     >
                         <ReactMarkdown remarkPlugins={[remarkGfm]}>
@@ -194,7 +194,7 @@ export default function IncidentLog({ monitorId }) {
                         </ReactMarkdown>
                     </div>
                 ) : (
-                    <pre className="text-xs text-gray-300 font-mono whitespace-pre-wrap break-words leading-relaxed">
+                    <pre className="text-xs text-gray-700 font-mono whitespace-pre-wrap break-words leading-relaxed">
                         {fileContent}
                     </pre>
                 )}
