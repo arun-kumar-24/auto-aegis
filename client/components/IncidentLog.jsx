@@ -5,6 +5,7 @@ import { FileText, Download, AlertCircle, Loader2, FolderOpen } from 'lucide-rea
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { getJourneyFiles } from '../services/api';
+import VoiceAssistant from './VoiceAssistant';
 
 /**
  * IncidentLog — lives inside the MonitorDetailPopup (Quadrant 4).
@@ -168,6 +169,9 @@ export default function IncidentLog({ monitorId }) {
                     );
                 })}
             </div>
+
+            {/* ── AI Voice Assistant ──────────────────────────────── */}
+            <VoiceAssistant fileContent={fileContent} />
 
             {/* ── File content viewer ───────────────────────────── */}
             <div className="flex-1 overflow-y-auto px-5 py-4 incident-log-content">
