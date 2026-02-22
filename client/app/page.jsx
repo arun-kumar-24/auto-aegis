@@ -98,12 +98,17 @@ export default function HomePage() {
             >
               Get Started for Free <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" size={18} />
             </Button>
-            <button className="flex items-center gap-3 px-8 py-5 text-sm font-black uppercase tracking-widest text-gray-900 hover:bg-gray-50 rounded-[2rem] transition-all">
+            <a
+              href="https://www.npmjs.com/package/aegis_auto"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 px-8 py-5 text-sm font-black uppercase tracking-widest text-gray-900 hover:bg-gray-50 rounded-[2rem] transition-all"
+            >
               <div className="w-10 h-10 bg-white border border-gray-100 rounded-full flex items-center justify-center shadow-sm">
-                <Play size={14} className="text-violet-600 fill-current" />
+                <svg viewBox="0 0 780 250" className="w-5 h-5"><path fill="#231F20" d="M240,250h100v-50h100V0H240V250z M340,50h50v100h-50V50z M480,0v200h100V50h50v150h50V50h50v150h50V0H480z M0,200h100V50h50v150h50V0H0V200z"></path></svg>
               </div>
-              Watch AI Recorder in Action
-            </button>
+              Read the Docs
+            </a>
           </div>
         </div>
       </section>

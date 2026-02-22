@@ -15,7 +15,8 @@ import {
     MoreVertical,
     RefreshCw,
     X,
-    Layout
+    Layout,
+    LogOut
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import MonitorDetailPopup from './MonitorDetailPopup';
@@ -187,7 +188,7 @@ function NewMonitorModal({ isOpen, onClose, onSuccess }) {
 }
 
 export default function Dashboard() {
-    const { user } = useAuth();
+    const { user, logout } = useAuth();
     const [monitors, setMonitors] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -224,12 +225,20 @@ export default function Dashboard() {
                         <p className="text-gray-400 font-medium text-lg">Your systems are operating within optimal parameters.</p>
                     </div>
 
-                    <button
-                        onClick={() => setIsModalOpen(true)}
-                        className="h-14 px-8 bg-gray-900 hover:bg-black text-white rounded-2xl font-black transition-all flex items-center gap-3 shadow-2xl shadow-gray-100 active:scale-95 group"
-                    >
-                        New Monitor <Plus size={20} className="group-hover:rotate-90 transition-transform" />
-                    </button>
+                    <div className="flex items-center gap-4">
+                        <button
+                            onClick={logout}
+                            className="h-14 px-6 bg-white hover:bg-gray-50 border border-gray-100 text-gray-900 rounded-2xl font-black transition-all flex items-center gap-2 shadow-sm active:scale-95"
+                        >
+                            <LogOut size={18} /> Logout
+                        </button>
+                        <button
+                            onClick={() => setIsModalOpen(true)}
+                            className="h-14 px-8 bg-gray-900 hover:bg-black text-white rounded-2xl font-black transition-all flex items-center gap-3 shadow-2xl shadow-gray-100 active:scale-95 group"
+                        >
+                            New Monitor <Plus size={20} className="group-hover:rotate-90 transition-transform" />
+                        </button>
+                    </div>
                 </div>
 
                 {/* Stats Grid */}

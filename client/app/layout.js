@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "AutoAegis | Premium E-Commerce",
-  description: "Elite tools for high-performance builds.",
+  title: "AutoAegis | Uptime & Flow Monitoring",
+  description: "Stop guessing if your checkout works. Catch 'silent' bugs with AI-powered synthetic journeys.",
 };
 
 export default function RootLayout({ children }) {
