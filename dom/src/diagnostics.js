@@ -15,10 +15,11 @@
  * Usage:
  *   node src/diagnostics.js
  *   node src/diagnostics.js --logs-dir ./custom-logs
+ *   node src/diagnostics.js --codebase ../my-app
  */
 
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
-import { resolve, join } from 'node:path';
+import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from 'node:fs';
+import { resolve, join, relative, extname } from 'node:path';
 
 // Load .env file (simple loader — no dependency needed)
 loadEnvFile();
@@ -35,11 +36,16 @@ if (!GROQ_API_KEY) {
 // ── Entry Point ────────────────────────────────────────────────────────
 
 const logsDir = parseLogsDir();
+const codebaseDir = parseCodebaseDir();
 
 console.log('═══════════════════════════════════════════════════════');
 console.log('   AI Incident Diagnostics');
 console.log('═══════════════════════════════════════════════════════');
-console.log(`\n📂  Logs directory : ${logsDir}\n`);
+console.log(`\n📂  Logs directory : ${logsDir}`);
+if (codebaseDir) {
+  console.log(`📁  Codebase       : ${codebaseDir}`);
+}
+console.log();
 
 runDiagnostics(logsDir).catch((err) => {
   console.error('\n❌  Diagnostics failed:', err.message);
@@ -64,6 +70,14 @@ async function runDiagnostics(dir) {
   // Summarise for the LLM (trim to avoid token bloat)
   const logBundle = buildLogBundle(runSummary, anomalies, crashReport);
 
+  // Scan codebase directory if provided
+  let codebaseTree = '';
+  if (codebaseDir) {
+    console.log('📁  Scanning codebase directory...');
+    codebaseTree = buildCodebaseTree(codebaseDir);
+    console.log(`    Found ${codebaseTree.split('\n').length} entries.\n`);
+  }
+
   const status = runSummary.status || 'UNKNOWN';
   const failedSteps = (runSummary.steps || []).filter((s) => s.status === 'FAIL');
 
@@ -82,14 +96,14 @@ async function runDiagnostics(dir) {
 
   console.log('🤖  Sending logs to Groq LLM for analysis...');
 
-  const aiResponse = await callGroqAPI(logBundle);
+  const aiResponse = await callGroqAPI(logBundle, codebaseTree);
 
   console.log('    ✓ Response received.\n');
 
   // ── Task 3: Generate Report ──────────────────────────────────────
 
   const reportPath = join(dir, 'incident_report.md');
-  const report = formatIncidentReport(runSummary, aiResponse);
+  const report = formatIncidentReport(runSummary, aiResponse, codebaseTree);
 
   writeFileSync(reportPath, report, 'utf-8');
 
@@ -179,22 +193,43 @@ function dedupeAnomalies(anomalies) {
 
 // ── Groq API Call ──────────────────────────────────────────────────────
 
-async function callGroqAPI(logBundle) {
+async function callGroqAPI(logBundle, codebaseTree = '') {
+  let codebaseContext = '';
+  if (codebaseTree) {
+    codebaseContext = `
+
+## CODEBASE CONTEXT
+The user's application has the following file structure. Use this to identify which specific file likely caused each error:
+
+\`\`\`
+${codebaseTree}
+\`\`\`
+
+When suggesting fixes, reference specific files from this tree by their path.`;
+  }
+
   const systemPrompt = `You are an SRE Agent. Analyze the provided synthetic monitoring logs. Your goal is to:
 
 1. **Root Cause Analysis**: Identify the root cause. Is it a UI change (selector no longer exists), a backend timeout, an authentication failure, a network issue, or a flaky test? Be specific.
 
-2. **Business Impact**: Based on the step name and action type (e.g., 'click on checkout', 'navigate to cart'), estimate the user-facing impact. Use severity levels: P0-Critical (revenue loss), P1-High (major feature broken), P2-Medium (degraded experience), P3-Low (cosmetic/minor).
+2. **Per-Error Breakdown**: For EACH unique error in the logs, provide:
+   - **Error**: The error signature (URL, status code, or message)
+   - **Why it occurred**: A clear explanation of what caused this specific error
+   - **Affected file**: Which file in the codebase (if provided) most likely contains the code responsible
+   - **Fix**: Exactly what the developer should change or check to resolve it
+   Format this as a Markdown table with columns: Error | Why | File | Fix
 
-3. **Actionable Fix**: Suggest exactly what the developer should check. Be specific — mention selectors, endpoints, or page elements. Provide 2-3 concrete next steps.
+3. **Business Impact**: Based on the step name and action type (e.g., 'click on checkout', 'navigate to cart'), estimate the user-facing impact. Use severity levels: P0-Critical (revenue loss), P1-High (major feature broken), P2-Medium (degraded experience), P3-Low (cosmetic/minor).
 
-4. **Executive Summary**: Write a 2-sentence summary for a non-technical manager.
+4. **Actionable Fix**: Provide 2-3 concrete next steps the developer should take immediately.
 
-5. **Confidence Score**: Rate your confidence in the root cause analysis from 0-100%. Explain briefly why.
+5. **Executive Summary**: A 2-sentence summary for a non-technical manager.
 
-Format your response in clean Markdown with the exact section headers: ## Root Cause Analysis, ## Business Impact, ## Actionable Fix, ## Executive Summary, ## Confidence Score`;
+6. **Confidence Score**: Rate your confidence in the root cause analysis from 0-100%. Explain briefly why.
 
-  const userPrompt = `Here are the synthetic monitoring logs from a failed run:\n\n${logBundle}`;
+Format your response in clean Markdown with the exact section headers: ## Root Cause Analysis, ## Per-Error Breakdown, ## Business Impact, ## Actionable Fix, ## Executive Summary, ## Confidence Score`;
+
+  const userPrompt = `Here are the synthetic monitoring logs from a failed run:\n\n${logBundle}${codebaseContext}`;
 
   const response = await fetch(GROQ_API_URL, {
     method: 'POST',
@@ -224,7 +259,7 @@ Format your response in clean Markdown with the exact section headers: ## Root C
 
 // ── Report Formatter ───────────────────────────────────────────────────
 
-function formatIncidentReport(runSummary, aiAnalysis) {
+function formatIncidentReport(runSummary, aiAnalysis, codebaseTree = '') {
   const now = new Date().toISOString();
   const failedSteps = (runSummary.steps || []).filter((s) => s.status === 'FAIL');
 
@@ -287,6 +322,21 @@ function formatIncidentReport(runSummary, aiAnalysis) {
   lines.push('');
   lines.push('*Report generated by Auto-Aegis AI Diagnostics*');
   lines.push('');
+
+  // Codebase tree (if scanned)
+  if (codebaseTree) {
+    lines.push('---');
+    lines.push('');
+    lines.push('<details>');
+    lines.push('<summary><strong>📁 Codebase Directory Tree</strong></summary>');
+    lines.push('');
+    lines.push('```');
+    lines.push(codebaseTree);
+    lines.push('```');
+    lines.push('');
+    lines.push('</details>');
+    lines.push('');
+  }
 
   return lines.join('\n');
 }
@@ -351,4 +401,86 @@ function loadEnvFile() {
   } catch {
     // .env file is optional
   }
+}
+
+function parseCodebaseDir() {
+  const args = process.argv.slice(2);
+  const idx = args.indexOf('--codebase');
+  if (idx !== -1 && args[idx + 1]) {
+    const dir = resolve(args[idx + 1]);
+    if (existsSync(dir)) return dir;
+    console.warn(`⚠️  Codebase directory not found: ${dir}`);
+  }
+  return null;
+}
+
+// ── Codebase Tree Scanner ──────────────────────────────────────────────
+
+const SKIP_DIRS = new Set([
+  'node_modules', '.git', 'dist', 'build', '.next', '__pycache__',
+  '.cache', 'coverage', '.nyc_output', 'vendor', 'browser-data',
+  '.browser-data', 'logs', '.gemini', 'sessions',
+]);
+
+const SOURCE_EXTS = new Set([
+  '.js', '.jsx', '.ts', '.tsx', '.mjs', '.cjs',
+  '.py', '.rb', '.go', '.rs', '.java', '.cs',
+  '.html', '.css', '.scss', '.sass', '.less',
+  '.json', '.yaml', '.yml', '.toml', '.env',
+  '.sql', '.graphql', '.prisma',
+  '.sh', '.bat', '.ps1',
+  '.md', '.txt',
+]);
+
+/**
+ * Build an indented text tree of the user's codebase (max depth 3).
+ * Only includes source-relevant files, skips common noise directories.
+ */
+function buildCodebaseTree(rootDir, maxDepth = 3) {
+  const lines = [];
+
+  function walk(dir, depth, prefix) {
+    if (depth > maxDepth) return;
+
+    let entries;
+    try {
+      entries = readdirSync(dir);
+    } catch {
+      return;
+    }
+
+    const items = entries
+      .filter((name) => !name.startsWith('.') || name === '.env')
+      .map((name) => {
+        const fullPath = join(dir, name);
+        let isDir = false;
+        try {
+          isDir = statSync(fullPath).isDirectory();
+        } catch {
+          return null;
+        }
+        return { name, fullPath, isDir };
+      })
+      .filter(Boolean)
+      .sort((a, b) => {
+        if (a.isDir !== b.isDir) return a.isDir ? -1 : 1;
+        return a.name.localeCompare(b.name);
+      });
+
+    for (const item of items) {
+      if (item.isDir) {
+        if (SKIP_DIRS.has(item.name)) continue;
+        lines.push(`${prefix}${item.name}/`);
+        walk(item.fullPath, depth + 1, prefix + '  ');
+      } else {
+        const ext = extname(item.name).toLowerCase();
+        if (SOURCE_EXTS.has(ext)) {
+          lines.push(`${prefix}${item.name}`);
+        }
+      }
+    }
+  }
+
+  walk(rootDir, 0, '');
+  return lines.join('\n');
 }

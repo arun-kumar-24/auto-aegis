@@ -28,8 +28,8 @@ export class SessionRecorder {
     /** @type {Array<object>} Ordered list of user actions */
     this.actions = [];
 
-    /** @type {Array<object>} Console errors, warnings, and failed network requests */
-    this.errors = [];
+    /** @type {Map<string, object>} Deduplicated errors keyed by fingerprint */
+    this._errorMap = new Map();
 
     /** @type {object|null} Session metadata (viewport, userAgent) */
     this.metadata = null;
@@ -126,7 +126,7 @@ export class SessionRecorder {
 
     console.log(`\n🏁  Session complete.`);
     console.log(`    Total actions : ${this.actions.length}`);
-    console.log(`    Total errors  : ${this.errors.length}`);
+    console.log(`    Unique errors : ${this._errorMap.size}`);
     console.log(`    Output        : ${outputPath}\n`);
 
     return outputPath;
@@ -143,50 +143,53 @@ export class SessionRecorder {
     page.on('console', (msg) => {
       const type = msg.type(); // 'error', 'warning', 'log', etc.
       if (type === 'error' || type === 'warning') {
-        this.errors.push({
+        const entry = {
           type: 'console',
           level: type,
           message: msg.text(),
           url: page.url(),
-          timestamp: Date.now(),
-        });
-
-        const icon = type === 'error' ? '🔴' : '🟡';
-        console.log(`  ${icon}  Console ${type}: ${msg.text().slice(0, 120)}`);
+        };
+        const isNew = this._dedupeError(entry);
+        if (isNew) {
+          const icon = type === 'error' ? '🔴' : '🟡';
+          console.log(`  ${icon}  Console ${type}: ${msg.text().slice(0, 120)}`);
+        }
       }
     });
 
     // ── Failed network requests ────────────────────────────────────────
     page.on('requestfailed', (request) => {
       const failure = request.failure();
-      this.errors.push({
+      const entry = {
         type: 'network',
         url: request.url(),
         method: request.method(),
         status: null,
         errorText: failure ? failure.errorText : 'Unknown error',
         resourceType: request.resourceType(),
-        timestamp: Date.now(),
-      });
-
-      console.log(`  🔴  Request failed: ${request.method()} ${request.url().slice(0, 100)}`);
+      };
+      const isNew = this._dedupeError(entry);
+      if (isNew) {
+        console.log(`  🔴  Request failed: ${request.method()} ${request.url().slice(0, 100)}`);
+      }
     });
 
     // ── HTTP 4xx / 5xx responses ───────────────────────────────────────
     page.on('response', (response) => {
       const status = response.status();
       if (status >= 400) {
-        this.errors.push({
+        const entry = {
           type: 'network',
           url: response.url(),
           method: response.request().method(),
           status: status,
           statusText: response.statusText(),
           resourceType: response.request().resourceType(),
-          timestamp: Date.now(),
-        });
-
-        console.log(`  🟠  HTTP ${status}: ${response.request().method()} ${response.url().slice(0, 100)}`);
+        };
+        const isNew = this._dedupeError(entry);
+        if (isNew) {
+          console.log(`  🟠  HTTP ${status}: ${response.request().method()} ${response.url().slice(0, 100)}`);
+        }
       }
     });
 
@@ -210,6 +213,55 @@ export class SessionRecorder {
         };
       }
     });
+  }
+
+  // ── Error Deduplication ──────────────────────────────────────────────
+
+  /**
+   * Deduplicate errors by fingerprint. Returns true if this is a new error.
+   * @param {object} entry - Error entry.
+   * @returns {boolean} Whether this was the first occurrence.
+   */
+  _dedupeError(entry) {
+    const key = this._errorFingerprint(entry);
+    const existing = this._errorMap.get(key);
+
+    if (existing) {
+      existing.count++;
+      existing.lastSeen = Date.now();
+      return false;
+    }
+
+    this._errorMap.set(key, {
+      ...entry,
+      count: 1,
+      firstSeen: Date.now(),
+      lastSeen: Date.now(),
+    });
+    return true;
+  }
+
+  /**
+   * Generate a fingerprint key for an error entry.
+   * Strips URL query params so variants of the same endpoint collapse.
+   */
+  _errorFingerprint(entry) {
+    let urlPath = entry.url || '';
+    try {
+      const u = new URL(urlPath);
+      urlPath = u.origin + u.pathname;
+    } catch {
+      // malformed URL — use as-is
+    }
+
+    if (entry.type === 'console') {
+      // Console errors: dedupe by level + first 80 chars of message
+      return `console|${entry.level}|${(entry.message || '').slice(0, 80)}`;
+    }
+
+    // Network errors: dedupe by method + urlPath + status/errorText
+    const errSig = entry.errorText || `HTTP_${entry.status}` || 'unknown';
+    return `network|${entry.method || ''}|${urlPath}|${errSig}`;
   }
 
   // ── Action Handling ──────────────────────────────────────────────────
@@ -285,15 +337,19 @@ export class SessionRecorder {
       mkdirSync(this.outputDir, { recursive: true });
     }
 
+    // Convert error Map to sorted array (highest count first)
+    const errors = [...this._errorMap.values()]
+      .sort((a, b) => b.count - a.count);
+
     const session = {
       metadata: {
         ...this.metadata,
         endTime: new Date().toISOString(),
         totalActions: this.actions.length,
-        totalErrors: this.errors.length,
+        uniqueErrors: errors.length,
       },
       actions: this.actions,
-      errors: this.errors,
+      errors,
     };
 
     const filename = `session-${this.sessionId}.json`;

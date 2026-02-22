@@ -6,10 +6,13 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
+    "shadow": "node src/aegis-shadow.js",
     "monitor": "node src/monitor.js",
     "diagnose": "node src/diagnostics.js"
   },
   "dependencies": {
+    "chalk": "^5.6.2",
+    "ora": "^9.3.0",
     "playwright": "^1.58.2",
     "uuid": "^11.0.0"
   }
