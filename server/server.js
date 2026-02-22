@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser';
 import { supabase } from './lib/supabase.js';
 import authRoutes from './routes/authRoutes.js';
 import monitorRoutes from './routes/monitorRoutes.js';
+import ingestRoutes from './routes/ingestRoutes.js';
 
 dotenv.config();
 
@@ -25,6 +26,7 @@ app.use(cookieParser());
 // Registration of modular routes
 app.use('/api/auth', authRoutes);
 app.use('/api/monitors', monitorRoutes);
+app.use('/api/ingest', ingestRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

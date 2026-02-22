@@ -160,3 +160,87 @@ export const rotateApiKey = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+
+// --- Analytics & Data Fetching ---
+
+export const getMonitorLogs = async (req, res) => {
+    const { id } = req.params;
+    const userId = req.user.id;
+    const { unprocessed } = req.query;
+
+    try {
+        let query = supabase
+            .from('journey_logs')
+            .select('*')
+            .eq('monitor_id', id)
+            .order('created_at', { ascending: false });
+
+        if (unprocessed === 'true') {
+            query = query.eq('processed_by_llm', false);
+        }
+
+        const { data, error } = await query;
+
+        if (error) throw error;
+        res.json(data);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+export const getMonitorResults = async (req, res) => {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    try {
+        const { data, error } = await supabase
+            .from('synthetic_results')
+            .select('*')
+            .eq('monitor_id', id)
+            .order('created_at', { ascending: false })
+            .limit(50);
+
+        if (error) throw error;
+        res.json(data);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+export const getMonitorStats = async (req, res) => {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    try {
+        // Fetch last 24h stats
+        const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+        const [results, logsCount] = await Promise.all([
+            supabase
+                .from('synthetic_results')
+                .select('status, response_time_ms')
+                .eq('monitor_id', id)
+                .gte('created_at', oneDayAgo),
+            supabase
+                .from('journey_logs')
+                .select('*', { count: 'exact', head: true })
+                .eq('monitor_id', id)
+        ]);
+
+        const data = results.data || [];
+        const total = data.length;
+        const passed = data.filter(r => r.status === 'PASS').length;
+        const avgResponseTime = total > 0
+            ? Math.round(data.reduce((acc, r) => acc + (r.response_time_ms || 0), 0) / total)
+            : 0;
+
+        res.json({
+            uptime_24h: total > 0 ? Math.round((passed / total) * 100) : 100,
+            avg_response_time_ms: avgResponseTime,
+            total_journey_logs: logsCount.count || 0,
+            recent_tests_count: total
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
