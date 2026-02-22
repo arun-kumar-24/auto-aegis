@@ -18,8 +18,9 @@ import {
     Layout
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import MonitorDetailPopup from './MonitorDetailPopup';
 
-function MonitorCard({ monitor, onUpdate }) {
+function MonitorCard({ monitor, onUpdate, onViewDetails }) {
     const statusColor = monitor.is_active ? 'text-emerald-500' : 'text-zinc-500';
     const statusBg = monitor.is_active ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-zinc-500/10 border-zinc-500/20';
 
@@ -54,7 +55,10 @@ function MonitorCard({ monitor, onUpdate }) {
                     <Clock size={12} />
                     Last checked: Just now
                 </div>
-                <button className="flex items-center gap-1 text-xs font-bold text-violet-600 hover:text-violet-500 transition-colors">
+                <button
+                    onClick={() => onViewDetails(monitor)}
+                    className="flex items-center gap-1 text-xs font-bold text-violet-600 hover:text-violet-500 transition-colors"
+                >
                     Details <ChevronRight size={14} />
                 </button>
             </div>
@@ -157,6 +161,8 @@ export default function Dashboard() {
     const [monitors, setMonitors] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedMonitor, setSelectedMonitor] = useState(null);
+    const [isDetailOpen, setIsDetailOpen] = useState(false);
 
     const fetchMonitors = useCallback(async () => {
         try {
@@ -250,7 +256,12 @@ export default function Dashboard() {
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                             {monitors.map(monitor => (
-                                <MonitorCard key={monitor.id} monitor={monitor} onUpdate={fetchMonitors} />
+                                <MonitorCard
+                                    key={monitor.id}
+                                    monitor={monitor}
+                                    onUpdate={fetchMonitors}
+                                    onViewDetails={(m) => { setSelectedMonitor(m); setIsDetailOpen(true); }}
+                                />
                             ))}
                         </div>
                     )}
@@ -261,6 +272,12 @@ export default function Dashboard() {
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onSuccess={fetchMonitors}
+            />
+
+            <MonitorDetailPopup
+                monitor={selectedMonitor}
+                isOpen={isDetailOpen}
+                onClose={() => { setIsDetailOpen(false); setSelectedMonitor(null); }}
             />
         </div>
     );
