@@ -18,7 +18,13 @@ const PORT = process.env.PORT || 3001;
 const upload = multer({ storage: multer.memoryStorage() });
 
 app.use(cors({
-    origin: 'http://localhost:3000', // Adjust to your frontend URL
+    origin: [
+        'http://localhost:3000',
+        'http://localhost:3001',
+        'http://localhost:5173', // Vite default
+        'https://auto-aegis.vercel.app',
+        'https://zap-texus.vercel.app' // User's zap client
+    ],
     credentials: true // Required for cookies
 }));
 app.use(express.json({ limit: '50mb' }));
