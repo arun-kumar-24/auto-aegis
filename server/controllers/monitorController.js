@@ -11,7 +11,7 @@ const isValidUrl = (url) => {
 };
 
 export const createMonitor = async (req, res) => {
-    const { name, target_url } = req.body;
+    const { name, target_url, server_location } = req.body;
     const userId = req.user.id;
 
     if (!name || !target_url) {
@@ -28,7 +28,8 @@ export const createMonitor = async (req, res) => {
             .insert([{
                 name,
                 target_url,
-                user_id: userId
+                user_id: userId,
+                server_location: server_location || null
             }])
             .select()
             .single();
