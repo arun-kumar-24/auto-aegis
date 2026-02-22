@@ -20,8 +20,8 @@ export default function HomePage() {
 
   const [chaosActive, setChaosActive] = useState(false);
   const [monitors, setMonitors] = useState([
-    { id: 1, name: 'Prod Checkout', url: 'texus.io/cart', status: 'active', uptime: '99.9%', latency: '240ms', lat: 13.0827, lon: 80.2707 },
-    { id: 2, name: 'API Gateway', url: 'api.texus.io', status: 'active', uptime: '100%', latency: '45ms', lat: 40.7128, lon: -74.0060 },
+    { id: 1, name: 'Prod Checkout', url: 'autoaegis.io/cart', status: 'active', uptime: '99.9%', latency: '240ms', lat: 13.0827, lon: 80.2707 },
+    { id: 2, name: 'API Gateway', url: 'api.autoaegis.io', status: 'active', uptime: '100%', latency: '45ms', lat: 40.7128, lon: -74.0060 },
   ]);
   const [isCreating, setIsCreating] = useState(false);
   const [newMonitor, setNewMonitor] = useState({ name: '', url: '' });
@@ -415,7 +415,7 @@ export default function HomePage() {
             <button key={link} className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] hover:text-violet-600 transition-colors">{link}</button>
           ))}
         </div>
-        <p className="text-[10px] font-black text-gray-300 uppercase tracking-[0.5em]">&copy; 2024 TEXUS SYSTEMS INC.</p>
+        <p className="text-[10px] font-black text-gray-300 uppercase tracking-[0.5em]">&copy; 2024 AUTOAEGIS SYSTEMS INC.</p>
       </footer>
     </main>
   );

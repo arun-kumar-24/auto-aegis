@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "TEXUS | Premium E-Commerce",
+  title: "AutoAegis | Premium E-Commerce",
   description: "Elite tools for high-performance builds.",
 };
 

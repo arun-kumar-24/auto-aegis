@@ -35,7 +35,7 @@ export default function Navbar() {
                         <Zap size={20} className="text-white fill-current" />
                     </div>
                     <div className="flex flex-col">
-                        <span className="font-black text-xl tracking-tighter text-gray-900 leading-none">TEXUS</span>
+                        <span className="font-black text-xl tracking-tighter text-gray-900 leading-none">AutoAegis</span>
                         <span className="text-[9px] font-bold text-violet-600 tracking-[0.2em] uppercase">Premium Tech</span>
                     </div>
                 </Link>

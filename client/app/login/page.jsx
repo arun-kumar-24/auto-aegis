@@ -41,7 +41,7 @@ export default function LoginPage() {
                         <div className="w-14 h-14 bg-violet-600 rounded-[1.5rem] flex items-center justify-center shadow-xl shadow-violet-200 group-hover:scale-110 transition-transform duration-500">
                             <Zap size={28} className="text-white fill-current" />
                         </div>
-                        <h1 className="mt-4 font-black text-2xl tracking-tighter text-gray-900 leading-none">TEXUS</h1>
+                        <h1 className="mt-4 font-black text-2xl tracking-tighter text-gray-900 leading-none">AutoAegis</h1>
                         <span className="mt-1 text-[10px] font-black text-violet-600 tracking-[0.3em] uppercase">Premium Protocol</span>
                     </Link>
                 </div>
@@ -66,7 +66,7 @@ export default function LoginPage() {
                                         required
                                         value={form.email}
                                         onChange={handleChange}
-                                        placeholder="operator@texus.io"
+                                        placeholder="operator@autoaegis.io"
                                         className={`${inputCls} pl-14`}
                                     />
                                 </div>
