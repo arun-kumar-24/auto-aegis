@@ -1,5 +1,17 @@
 import { NextResponse } from 'next/server';
 
+// CORS Headers configuration
+const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+// Handle OPTIONS request for CORS preflight
+export async function OPTIONS(req) {
+    return NextResponse.json({}, { headers: corsHeaders });
+}
+
 export async function POST(req) {
     try {
         const body = await req.json();
@@ -17,7 +29,7 @@ export async function POST(req) {
             systemPrompt = `You are an elite DevOps AI assistant named Aegis. Answer the user's question based strictly on the provided incident log context. Be concise and conversational, suitable for text-to-speech. If the answer is not in the log, state that clearly.`;
             userPrompt = `Context:\n${content}\n\nQuestion: ${question}`;
         } else {
-            return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+            return NextResponse.json({ error: 'Invalid action' }, { status: 400, headers: corsHeaders });
         }
 
         // Call Custom Ollama Endpoint (/api/generate format)
@@ -46,13 +58,13 @@ export async function POST(req) {
         }
 
         const reply = data.response.trim();
-        return NextResponse.json({ result: reply });
+        return NextResponse.json({ result: reply }, { headers: corsHeaders });
 
     } catch (error) {
         console.error('AI Route Error:', error);
         return NextResponse.json(
             { error: error.message || 'Failed to process AI request' },
-            { status: 500 }
+            { status: 500, headers: corsHeaders }
         );
     }
 }
