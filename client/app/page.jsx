@@ -7,7 +7,8 @@ import {
   BrainCircuit, Globe2, Video, Database, Terminal, Layout,
   AlertTriangle, RefreshCw, Layers, CheckCircle2, FlaskConical,
   Activity, Lock, Shield, Plus, Globe, BarChart3, Clock, MoreVertical,
-  ChevronRight, ExternalLink
+  ChevronRight, ExternalLink, FileSearch, Brain, Radar, Cpu,
+  HeartPulse, Fingerprint, ScanEye, BadgeCheck
 } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Button from '../components/Button';
@@ -66,9 +67,10 @@ export default function HomePage() {
     <main className="min-h-screen bg-[#0a0a14] page-enter selection:bg-violet-500/30 selection:text-white">
       <Navbar />
 
-      {/* 1. Hero Section */}
+      {/* ═══════════════════════════════════════════════════════════
+          1. HERO SECTION
+      ═══════════════════════════════════════════════════════════ */}
       <section className="relative pt-32 pb-24 overflow-hidden bg-hero-gradient">
-        {/* Ambient glow orbs */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-full -z-10">
           <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-violet-600/10 rounded-full blur-[150px] -mr-64 -mt-32 animate-glow-pulse" />
           <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-800/8 rounded-full blur-[120px] -ml-64 -mb-32 animate-glow-pulse" style={{ animationDelay: '1.5s' }} />
@@ -78,16 +80,16 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-10">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-400 text-[10px] font-black uppercase tracking-widest animate-fade-in">
             <span className="w-1.5 h-1.5 bg-violet-400 rounded-full animate-pulse" />
-            Catch what others miss
+            Shadow Recording · AI Diagnostics · Self-Healing
           </div>
 
           <h1 className="text-6xl sm:text-8xl font-black tracking-tighter text-white leading-[0.9] text-balance">
-            Stop Guessing If Your <br />
-            <span className="text-gradient-purple">Checkout Actually Works.</span>
+            Stop Monitoring Servers. <br />
+            <span className="text-gradient-purple">Start Validating Journeys.</span>
           </h1>
 
           <p className="text-gray-400 text-xl font-medium leading-relaxed max-w-3xl mx-auto">
-            Traditional monitors check if your server is "Up." We check if your users can actually complete a purchase. Catch "silent" bugs with AI-powered synthetic journeys.
+            Traditional monitors check if your heart is beating. We check if you can actually run. AutoAegis uses <span className="text-violet-400 font-bold">Shadow Recording</span> and <span className="text-violet-400 font-bold">AI-Diagnostics</span> to catch the 'Silent Red' inside your 'Green' dashboards.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
@@ -114,7 +116,9 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 2. The Integrated Dashboard Section */}
+      {/* ═══════════════════════════════════════════════════════════
+          2. LIVE CONTROL CENTER + AVOCADO GRADE
+      ═══════════════════════════════════════════════════════════ */}
       <section ref={dashboardRef} id="dashboard" className="py-24 bg-section-gradient border-y border-white/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-12 space-y-4">
@@ -132,6 +136,26 @@ export default function HomePage() {
                 >
                   <Plus size={16} /> Create Monitor
                 </button>
+              </div>
+
+              {/* Avocado Grade Card */}
+              <div className="p-4 border-b border-white/5">
+                <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-violet-500/10 border border-emerald-500/20 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-emerald-400/10 rounded-full blur-2xl" />
+                  <div className="relative z-10">
+                    <div className="flex items-center gap-2 mb-2">
+                      <BadgeCheck size={16} className="text-emerald-400" />
+                      <span className="text-[9px] font-black text-emerald-400/80 uppercase tracking-widest">Avocado Grade</span>
+                    </div>
+                    <div className="flex items-end gap-2">
+                      <span className="text-3xl font-black text-emerald-400">98%</span>
+                      <span className="text-[10px] font-bold text-emerald-400/60 mb-1">Journey Integrity</span>
+                    </div>
+                    <p className="text-[10px] text-gray-500 font-medium mt-2 leading-relaxed">
+                      Going beyond uptime. Measures the health of your 'Golden Paths' — ensuring the internal core is as solid as the surface.
+                    </p>
+                  </div>
+                </div>
               </div>
 
               <div className="flex-1 overflow-y-auto p-4 space-y-2 no-scrollbar">
@@ -183,7 +207,7 @@ export default function HomePage() {
                 ))}
               </div>
 
-              {/* Visual Placeholder Space */}
+              {/* Globe Visualization Area */}
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-black text-white uppercase tracking-tight">Active Monitor Globes</h3>
@@ -195,11 +219,16 @@ export default function HomePage() {
 
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
                   {monitors.map((m) => (
-                    <div key={m.id} className="aspect-[16/10] h-[350px] bg-[#0a0a14] rounded-[2rem] flex items-center justify-center border border-white/5 relative overflow-hidden">
-                      <div className="absolute inset-0 bg-violet-500/5 blur-3xl rounded-full animate-glow-pulse" />
-                      <div className="text-center relative z-10 space-y-4">
-                        <Globe size={48} className="text-violet-500/40 mx-auto" />
-                        <p className="text-gray-600 text-sm font-medium">3D Protocol Visualization</p>
+                    <div key={m.id} className="aspect-[16/10] h-[350px] bg-[#0a0a14] rounded-[2rem] border border-white/5 relative overflow-hidden group">
+                      <img
+                        src="/fxVE.gif"
+                        alt={`${m.name} — Live Protocol Visualization`}
+                        className="absolute inset-0 w-full h-full object-cover rounded-[2rem] opacity-80 group-hover:opacity-100 transition-opacity duration-500"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a14] via-transparent to-transparent" />
+                      <div className="absolute bottom-6 left-6 z-10 flex items-center gap-3">
+                        <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse glow-green" />
+                        <span className="text-[10px] font-black text-white/70 uppercase tracking-widest">{m.name} — Live</span>
                       </div>
                     </div>
                   ))}
@@ -213,14 +242,14 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Recent Incident Feed */}
+              {/* System Events */}
               <div className="space-y-6">
                 <h3 className="text-lg font-black text-white uppercase tracking-tight">System Events</h3>
                 <div className="bg-white/[0.02] border border-white/5 rounded-[2.5rem] overflow-hidden">
                   {[
-                    { status: 'success', event: 'New Monitor Created', time: '2 min ago', desc: 'Precision Workstation monitor is now active.' },
-                    { status: 'warning', event: 'Latency Detected', time: '14 min ago', desc: 'Slight delay in US-East response times.' },
-                    { status: 'success', event: 'Health Check Passed', time: '1 hour ago', desc: 'All systems operational across 24 nodes.' }
+                    { status: 'success', event: 'Journey Integrity Verified', time: '2 min ago', desc: 'Checkout flow passed all 14 assertions. Avocado Grade: 98%.' },
+                    { status: 'warning', event: 'Silent Red Detected', time: '14 min ago', desc: 'API returns 200 OK but response body missing "order_id" — journey incomplete.' },
+                    { status: 'success', event: 'Self-Healing Applied', time: '1 hour ago', desc: 'LLM updated 3 CSS selectors after UI deployment. Zero manual intervention.' }
                   ].map((evt, i) => (
                     <div key={i} className={`p-6 flex items-center gap-6 ${i !== 2 ? 'border-b border-white/5' : ''} hover:bg-white/[0.02] transition-colors`}>
                       <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${evt.status === 'success' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}`}>
@@ -238,50 +267,24 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Create Monitor Modal Overlay */}
+              {/* Create Monitor Modal */}
               {isCreating && (
                 <div className="absolute inset-0 z-20 bg-[#0a0a14]/80 backdrop-blur-md flex items-center justify-center p-8 animate-in fade-in duration-300">
                   <div className="glass-card w-full max-w-md shadow-2xl shadow-purple-900/20 rounded-[2.5rem] p-10 animate-in zoom-in-95 duration-500">
                     <h3 className="text-2xl font-black text-white mb-2">New Protocol</h3>
                     <p className="text-gray-500 text-sm mb-8 font-medium">Define the parameters for your next monitor.</p>
-
                     <form onSubmit={handleCreateMonitor} className="space-y-6">
                       <div className="space-y-2">
                         <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Monitor Name</label>
-                        <input
-                          type="text"
-                          placeholder="Ex: Main Checkout Flow"
-                          className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm font-medium text-white placeholder-gray-600 focus:ring-4 focus:ring-violet-500/20 focus:border-violet-500/30 outline-none transition-all"
-                          value={newMonitor.name}
-                          onChange={(e) => setNewMonitor({ ...newMonitor, name: e.target.value })}
-                          required
-                        />
+                        <input type="text" placeholder="Ex: Main Checkout Flow" className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm font-medium text-white placeholder-gray-600 focus:ring-4 focus:ring-violet-500/20 focus:border-violet-500/30 outline-none transition-all" value={newMonitor.name} onChange={(e) => setNewMonitor({ ...newMonitor, name: e.target.value })} required />
                       </div>
                       <div className="space-y-2">
                         <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Endpoint URL</label>
-                        <input
-                          type="url"
-                          placeholder="https://example.com"
-                          className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm font-medium text-white placeholder-gray-600 focus:ring-4 focus:ring-violet-500/20 focus:border-violet-500/30 outline-none transition-all"
-                          value={newMonitor.url}
-                          onChange={(e) => setNewMonitor({ ...newMonitor, url: e.target.value })}
-                          required
-                        />
+                        <input type="url" placeholder="https://example.com" className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm font-medium text-white placeholder-gray-600 focus:ring-4 focus:ring-violet-500/20 focus:border-violet-500/30 outline-none transition-all" value={newMonitor.url} onChange={(e) => setNewMonitor({ ...newMonitor, url: e.target.value })} required />
                       </div>
                       <div className="flex gap-4 pt-4">
-                        <button
-                          type="button"
-                          onClick={() => setIsCreating(false)}
-                          className="flex-1 h-14 rounded-2xl text-xs font-black uppercase tracking-widest text-gray-500 hover:bg-white/5 hover:text-gray-300 transition-all"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          type="submit"
-                          className="flex-1 h-14 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-purple-900/30"
-                        >
-                          Deploy
-                        </button>
+                        <button type="button" onClick={() => setIsCreating(false)} className="flex-1 h-14 rounded-2xl text-xs font-black uppercase tracking-widest text-gray-500 hover:bg-white/5 hover:text-gray-300 transition-all">Cancel</button>
+                        <button type="submit" className="flex-1 h-14 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-purple-900/30">Deploy</button>
                       </div>
                     </form>
                   </div>
@@ -292,7 +295,9 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 3. The Problem Section */}
+      {/* ═══════════════════════════════════════════════════════════
+          3. THE WATERMELON PROBLEM
+      ═══════════════════════════════════════════════════════════ */}
       <section className="py-32 bg-section-gradient">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-20 items-center">
@@ -341,46 +346,72 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 4. How It Works Section */}
+      {/* ═══════════════════════════════════════════════════════════
+          4. HOW IT WORKS — 3 STEPS
+      ═══════════════════════════════════════════════════════════ */}
       <section className="py-32 bg-[#0a0a14]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center max-w-3xl mx-auto mb-24">
-          <h2 className="text-4xl font-black tracking-tight text-white mb-4">3 Steps to Total Coverage</h2>
-          <p className="text-gray-500 font-bold uppercase tracking-widest text-sm underline decoration-violet-500/30 decoration-4 underline-offset-8">JS Recorder → LLM → Playwright</p>
+          <h2 className="text-4xl font-black tracking-tight text-white mb-4">3 Steps to Self-Diagnostic Immunity</h2>
+          <p className="text-gray-500 font-bold uppercase tracking-widest text-sm underline decoration-violet-500/30 decoration-4 underline-offset-8">Shadow → Stress-Test → Diagnose</p>
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-3 gap-8">
           {[
-            { icon: <MousePointer2 />, title: "Record Real Intent", desc: "Drop our 1KB script into your app. It captures the CSS selectors and routes real users take." },
-            { icon: <BrainCircuit />, title: "AI-Generated Resilience", desc: "Our LLM cleans the logs, removes noise, and writes Playwright scripts that don't break when your UI changes." },
-            { icon: <Globe2 />, title: "Global Simulation", desc: "We run your 'Golden Paths' every 5 minutes from 20+ global regions. If it breaks, you get the proof instantly." }
+            {
+              icon: <Fingerprint />,
+              step: "01",
+              title: "Shadow & Learn",
+              time: "0–30s",
+              desc: "Just interact with your site. Our Shadow Recorder maps your 'Healthy DNA' — capturing selectors, network baselines, and human timing."
+            },
+            {
+              icon: <Radar />,
+              step: "02",
+              title: "Stress-Test Simulation",
+              time: "Every 5min",
+              desc: "Our Guardian Fleet executes your journey from 20+ regions, looking for performance decay and silent API failures."
+            },
+            {
+              icon: <Brain />,
+              step: "03",
+              title: "Autonomous Diagnosis",
+              time: "Instant",
+              desc: "If a journey breaks, we don't just alert you. We diagnose the root cause and push the full forensic package to your dashboard."
+            }
           ].map((step, idx) => (
-            <div key={idx} className="group p-10 glass-card rounded-[2.5rem] hover:border-violet-500/30 transition-all hover:shadow-2xl hover:shadow-purple-900/20">
-              <div className="w-16 h-16 bg-violet-500/10 text-violet-400 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 group-hover:bg-violet-600 group-hover:text-white transition-all duration-500 border border-violet-500/20">
+            <div key={idx} className="group p-10 glass-card rounded-[2.5rem] hover:border-violet-500/30 transition-all hover:shadow-2xl hover:shadow-purple-900/20 relative">
+              <div className="absolute top-6 right-8 text-[10px] font-black text-violet-500/30 uppercase tracking-widest">{step.step}</div>
+              <div className="w-16 h-16 bg-violet-500/10 text-violet-400 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-violet-600 group-hover:text-white transition-all duration-500 border border-violet-500/20">
                 {step.icon}
               </div>
-              <h3 className="text-xl font-black text-white mb-4">{step.title}</h3>
+              <div className="flex items-center gap-3 mb-4">
+                <h3 className="text-xl font-black text-white">{step.title}</h3>
+                <span className="px-2 py-0.5 text-[9px] font-black uppercase tracking-widest bg-violet-500/10 text-violet-400 rounded-full border border-violet-500/20">{step.time}</span>
+              </div>
               <p className="text-gray-400 font-medium leading-relaxed">{step.desc}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* 5. Evidence Vault Section */}
+      {/* ═══════════════════════════════════════════════════════════
+          5. EVIDENCE LOCKER + AI ROOT CAUSE
+      ═══════════════════════════════════════════════════════════ */}
       <section className="py-32 bg-[#12121e] text-white rounded-[4rem] mx-4 sm:mx-8 px-8 sm:px-12 border border-white/5">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col lg:flex-row items-end justify-between gap-12 mb-24">
             <div className="space-y-6">
-              <h2 className="text-5xl font-black tracking-tighter leading-none">Don't just get an alert. <br /><span className="text-gradient-purple">Get a solution.</span></h2>
-              <p className="text-gray-400 text-lg font-medium max-w-xl">Everything you need to fix the bug at lightning speed.</p>
+              <h2 className="text-5xl font-black tracking-tighter leading-none">Don't just get an alert. <br /><span className="text-gradient-purple">Get the full forensic package.</span></h2>
+              <p className="text-gray-400 text-lg font-medium max-w-xl">Every failure comes with a complete <span className="text-violet-400 font-bold">Diagnostic Package</span> — so you fix bugs at lightning speed, not debugging speed.</p>
             </div>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
             {[
-              { title: "Video Replays", desc: "Watch exactly where the bot got stuck.", icon: <Video /> },
-              { title: "Network Waterfalls", desc: "See the specific API failure or latency spike.", icon: <Layers /> },
-              { title: "DOM Snapshots", desc: "Inspect the HTML state at the exact millisecond.", icon: <Layout /> },
-              { title: "Console Log Sync", desc: "View browser errors side-by-side with visual proof.", icon: <Terminal /> }
+              { title: "Video Replays", desc: "Watch exactly where the bot got stuck — frame by frame.", icon: <Video /> },
+              { title: "HAR Network Receipts", desc: "Full HTTP Archive (HAR 1.2) capturing every request, response, and timing.", icon: <Layers /> },
+              { title: "DOM Snapshots", desc: "Inspect the HTML state at the exact millisecond of failure.", icon: <Layout /> },
+              { title: "Console Log Sync", desc: "View browser errors and warnings side-by-side with visual proof.", icon: <Terminal /> }
             ].map((f, i) => (
               <div key={i} className="p-8 rounded-[2rem] bg-white/[0.03] border border-white/5 hover:bg-violet-500/5 hover:border-violet-500/20 transition-all group">
                 <div className="text-violet-400 mb-6 group-hover:scale-110 transition-transform">{f.icon}</div>
@@ -389,11 +420,77 @@ export default function HomePage() {
               </div>
             ))}
           </div>
+
+          {/* AI Root-Cause Analysis Feature */}
+          <div className="glass-card rounded-[2.5rem] p-10 sm:p-14 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-violet-500/5 rounded-full blur-[80px]" />
+            <div className="relative z-10 flex flex-col lg:flex-row items-start gap-10">
+              <div className="w-20 h-20 bg-gradient-to-br from-violet-500/20 to-purple-600/20 rounded-3xl flex items-center justify-center border border-violet-500/20 flex-shrink-0">
+                <Brain size={36} className="text-violet-400" />
+              </div>
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <h3 className="text-2xl font-black text-white">AI Root-Cause Analysis</h3>
+                  <span className="px-3 py-1 text-[9px] font-black uppercase tracking-widest bg-violet-500/10 text-violet-400 rounded-full border border-violet-500/20">Virtual SRE</span>
+                </div>
+                <p className="text-gray-400 text-base font-medium leading-relaxed max-w-2xl">
+                  Our Virtual SRE analyzes the technical wreckage — HAR files, console logs, and step-by-step traces — to tell you exactly <span className="text-white font-bold italic">why</span> it failed in plain English. No more digging through 500-line stack traces at 3 AM.
+                </p>
+                <div className="flex items-center gap-4 pt-2">
+                  <div className="flex items-center gap-2 text-[10px] font-black text-emerald-400 uppercase tracking-widest">
+                    <CheckCircle2 size={14} /> Causal Chain Analysis
+                  </div>
+                  <div className="flex items-center gap-2 text-[10px] font-black text-emerald-400 uppercase tracking-widest">
+                    <CheckCircle2 size={14} /> Plain English Reports
+                  </div>
+                  <div className="flex items-center gap-2 text-[10px] font-black text-emerald-400 uppercase tracking-widest">
+                    <CheckCircle2 size={14} /> Fix Suggestions
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* 6. Social Proof & Trust Section */}
-      <section className="py-32 mb-20 px-4 sm:px-6 lg:px-8 bg-[#0a0a14]">
+      {/* ═══════════════════════════════════════════════════════════
+          6. TECHNICAL TRANSPARENCY TABLE
+      ═══════════════════════════════════════════════════════════ */}
+      <section className="py-32 bg-[#0a0a14]">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16 space-y-4">
+            <h2 className="text-4xl font-black tracking-tight text-white">Technical Transparency</h2>
+            <p className="text-gray-500 font-medium text-lg">The AutoAegis Advantage — no hidden complexity.</p>
+          </div>
+
+          <div className="glass-card rounded-[2.5rem] overflow-hidden">
+            {[
+              { feature: "Setup Time", icon: <Clock size={20} className="text-violet-400" />, advantage: "30 Seconds.", detail: "Just use your app; we 'shadow' your DNA." },
+              { feature: "Error Detection", icon: <ScanEye size={20} className="text-amber-400" />, advantage: "Silent Sentinel.", detail: "Intercepts 500-errors hidden behind 'Green' buttons." },
+              { feature: "Maintenance", icon: <Cpu size={20} className="text-emerald-400" />, advantage: "Self-Healing AI.", detail: "LLM updates scripts when your CSS classes change." },
+              { feature: "Evidence", icon: <FileSearch size={20} className="text-fuchsia-400" />, advantage: "Forensic-Grade.", detail: "HAR 1.2, Trace-Logs, and Causal Chain analysis." }
+            ].map((row, i) => (
+              <div key={i} className={`flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-8 p-8 ${i !== 3 ? 'border-b border-white/5' : ''} hover:bg-white/[0.02] transition-colors`}>
+                <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center border border-white/5 flex-shrink-0">
+                  {row.icon}
+                </div>
+                <div className="flex-shrink-0 w-40">
+                  <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{row.feature}</span>
+                </div>
+                <div className="flex-1">
+                  <span className="text-white font-black">{row.advantage}</span>
+                  <span className="text-gray-400 font-medium ml-2">{row.detail}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════
+          7. TRUST & ENGINEERING
+      ═══════════════════════════════════════════════════════════ */}
+      <section className="py-32 px-4 sm:px-6 lg:px-8 bg-[#0a0a14]">
         <div className="max-w-7xl mx-auto text-center">
           <h2 className="text-4xl font-black tracking-tight text-white mb-24">Built for Modern Engineering Teams.</h2>
           <div className="grid md:grid-cols-3 gap-16">
@@ -414,6 +511,35 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ═══════════════════════════════════════════════════════════
+          8. MIC DROP CTA
+      ═══════════════════════════════════════════════════════════ */}
+      <section className="py-24 mx-4 sm:mx-8">
+        <div className="max-w-4xl mx-auto text-center glass-card rounded-[3rem] p-16 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-violet-500/5 to-purple-600/5" />
+          <div className="absolute top-0 right-0 w-64 h-64 bg-violet-500/5 rounded-full blur-[80px]" />
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-600/5 rounded-full blur-[60px]" />
+          <div className="relative z-10 space-y-8">
+            <HeartPulse size={40} className="text-violet-400 mx-auto" />
+            <blockquote className="text-3xl sm:text-4xl font-black text-white tracking-tight leading-tight">
+              "We aren't just watching your business; <br />
+              <span className="text-gradient-purple">we're protecting its ability to function."</span>
+            </blockquote>
+            <Button
+              variant="primary"
+              size="lg"
+              className="h-16 px-12 rounded-[2rem] text-sm group mx-auto"
+              onClick={() => dashboardRef.current?.scrollIntoView({ behavior: 'smooth' })}
+            >
+              Start Protecting Now <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" size={18} />
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════
+          FOOTER
+      ═══════════════════════════════════════════════════════════ */}
       <footer className="py-24 border-t border-white/5 text-center bg-[#0a0a14]">
         <div className="flex justify-center gap-12 mb-12 flex-wrap px-4">
           {['Status', 'Docs', 'API', 'Security', 'Privacy'].map(link => (
