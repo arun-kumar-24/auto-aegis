@@ -10,7 +10,6 @@ export default function Navbar() {
     const [scrolled, setScrolled] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
 
-    // Mock cart for now
     const cartCount = 0;
 
     useEffect(() => {
@@ -25,34 +24,34 @@ export default function Navbar() {
     };
 
     return (
-        <nav className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${scrolled ? 'bg-white/80 backdrop-blur-xl border-b border-gray-100/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)]' : 'bg-transparent'
+        <nav className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${scrolled ? 'bg-[#0a0a14]/80 backdrop-blur-xl border-b border-white/5 shadow-[0_8px_30px_rgb(0,0,0,0.3)]' : 'bg-transparent'
             }`}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
 
                 {/* Brand */}
                 <Link href="/" className="flex items-center gap-3 group">
-                    <div className="w-10 h-10 bg-violet-600 rounded-2xl flex items-center justify-center group-hover:bg-violet-700 transition-all duration-300 shadow-lg shadow-violet-200">
+                    <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-700 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-all duration-300 shadow-lg shadow-purple-900/40">
                         <Zap size={20} className="text-white fill-current" />
                     </div>
                     <div className="flex flex-col">
-                        <span className="font-black text-xl tracking-tighter text-gray-900 leading-none">AutoAegis</span>
-                        <span className="text-[9px] font-bold text-violet-600 tracking-[0.2em] uppercase">Premium Tech</span>
+                        <span className="font-black text-xl tracking-tighter text-white leading-none">AutoAegis</span>
+                        <span className="text-[9px] font-bold text-violet-400 tracking-[0.2em] uppercase">Premium Tech</span>
                     </div>
                 </Link>
 
                 {/* Desktop Navigation */}
-                <div className="hidden md:flex items-center gap-1 bg-gray-50/50 p-1.5 rounded-2xl border border-gray-100">
-                    <Link href="/" className="px-5 py-2 text-xs font-black uppercase tracking-wider text-gray-400 hover:text-gray-900 hover:bg-white rounded-xl transition-all">
+                <div className="hidden md:flex items-center gap-1 bg-white/5 p-1.5 rounded-2xl border border-white/10">
+                    <Link href="/" className="px-5 py-2 text-xs font-black uppercase tracking-wider text-gray-400 hover:text-white hover:bg-white/10 rounded-xl transition-all">
                         Home
                     </Link>
                     <button
                         onClick={() => document.getElementById('dashboard')?.scrollIntoView({ behavior: 'smooth' })}
-                        className="px-5 py-2 text-xs font-black uppercase tracking-wider text-gray-400 hover:text-gray-900 hover:bg-white rounded-xl transition-all"
+                        className="px-5 py-2 text-xs font-black uppercase tracking-wider text-gray-400 hover:text-white hover:bg-white/10 rounded-xl transition-all"
                     >
                         Dashboard
                     </button>
                     {user && (
-                        <Link href="/orders" className="px-5 py-2 text-xs font-black uppercase tracking-wider text-gray-400 hover:text-gray-900 hover:bg-white rounded-xl transition-all flex items-center gap-2">
+                        <Link href="/orders" className="px-5 py-2 text-xs font-black uppercase tracking-wider text-gray-400 hover:text-white hover:bg-white/10 rounded-xl transition-all flex items-center gap-2">
                             <Package size={14} /> Orders
                         </Link>
                     )}
@@ -62,36 +61,36 @@ export default function Navbar() {
                 <div className="flex items-center gap-3">
                     {/* Cart Trigger */}
                     <button
-                        className="relative p-3 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-2xl transition-all group"
+                        className="relative p-3 text-gray-500 hover:text-white hover:bg-white/10 rounded-2xl transition-all group"
                         aria-label="Open cart"
                     >
                         <ShoppingCart size={22} />
                         {cartCount > 0 && (
-                            <span className="absolute top-2 right-2 min-w-[18px] h-[18px] bg-violet-600 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white shadow-sm">
+                            <span className="absolute top-2 right-2 min-w-[18px] h-[18px] bg-violet-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-[#0a0a14] shadow-sm">
                                 {cartCount > 99 ? '99+' : cartCount}
                             </span>
                         )}
                     </button>
 
                     {/* Authentication / Profile */}
-                    <div className="hidden md:block h-8 w-px bg-gray-100 mx-2" />
+                    <div className="hidden md:block h-8 w-px bg-white/10 mx-2" />
 
                     {user ? (
                         <div className="hidden md:flex items-center gap-3">
-                            <div className="flex items-center gap-3 pl-3 pr-4 py-2 bg-gray-50 border border-gray-100 rounded-2xl">
-                                <div className="w-8 h-8 bg-violet-600 rounded-xl flex items-center justify-center text-white text-xs font-black uppercase shadow-sm">
+                            <div className="flex items-center gap-3 pl-3 pr-4 py-2 bg-white/5 border border-white/10 rounded-2xl">
+                                <div className="w-8 h-8 bg-gradient-to-br from-violet-500 to-purple-700 rounded-xl flex items-center justify-center text-white text-xs font-black uppercase shadow-sm">
                                     {(user.name || user.email || '?').charAt(0)}
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-xs font-black text-gray-900 leading-none truncate max-w-[120px]">
+                                    <span className="text-xs font-black text-white leading-none truncate max-w-[120px]">
                                         {user.name || user.email?.split('@')[0] || 'Account'}
                                     </span>
-                                    <span className="text-[10px] font-bold text-gray-400 truncate max-w-[120px]">{user.email}</span>
+                                    <span className="text-[10px] font-bold text-gray-500 truncate max-w-[120px]">{user.email}</span>
                                 </div>
                             </div>
                             <button
                                 onClick={handleLogout}
-                                className="p-3 bg-gray-100 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded-2xl transition-all"
+                                className="p-3 bg-white/5 hover:bg-red-500/20 text-gray-500 hover:text-red-400 rounded-2xl transition-all border border-white/5 hover:border-red-500/20"
                                 title="Sign out"
                             >
                                 <LogOut size={18} />
@@ -99,10 +98,10 @@ export default function Navbar() {
                         </div>
                     ) : (
                         <div className="hidden md:flex items-center gap-2">
-                            <Link href="/login" className="px-6 py-2.5 text-xs font-black uppercase tracking-wider text-gray-900 hover:bg-gray-100 rounded-2xl transition-all">
+                                <Link href="/login" className="px-6 py-2.5 text-xs font-black uppercase tracking-wider text-gray-300 hover:text-white hover:bg-white/5 rounded-2xl transition-all">
                                 Log In
                             </Link>
-                            <Link href="/signup" className="px-6 py-2.5 text-xs font-black uppercase tracking-wider bg-gray-900 hover:bg-black text-white rounded-2xl transition-all shadow-lg shadow-gray-200 active:scale-95">
+                                <Link href="/signup" className="px-6 py-2.5 text-xs font-black uppercase tracking-wider bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white rounded-2xl transition-all shadow-lg shadow-purple-900/30 active:scale-95">
                                 Join Now
                             </Link>
                         </div>
@@ -111,7 +110,7 @@ export default function Navbar() {
                     {/* Mobile Menu Button */}
                     <button
                         onClick={() => setMobileOpen(!mobileOpen)}
-                        className="md:hidden p-3 bg-gray-100 text-gray-500 rounded-2xl"
+                        className="md:hidden p-3 bg-white/10 text-gray-400 rounded-2xl"
                     >
                         {mobileOpen ? <X size={20} /> : <Menu size={20} />}
                     </button>
@@ -120,36 +119,36 @@ export default function Navbar() {
 
             {/* Mobile Drawer */}
             {mobileOpen && (
-                <div className="md:hidden bg-white border-t border-gray-100 px-6 py-8 space-y-4 animate-in slide-in-from-top duration-300">
-                    <Link href="/" onClick={() => setMobileOpen(false)} className="block text-sm font-black uppercase tracking-widest text-gray-900">Home</Link>
+                <div className="md:hidden bg-[#0a0a14]/95 backdrop-blur-xl border-t border-white/5 px-6 py-8 space-y-4 animate-in slide-in-from-top duration-300">
+                    <Link href="/" onClick={() => setMobileOpen(false)} className="block text-sm font-black uppercase tracking-widest text-white">Home</Link>
                     <button
                         onClick={() => {
                             setMobileOpen(false);
                             document.getElementById('dashboard')?.scrollIntoView({ behavior: 'smooth' });
                         }}
-                        className="block text-sm font-black uppercase tracking-widest text-gray-900 text-left"
+                        className="block text-sm font-black uppercase tracking-widest text-white text-left"
                     >
                         Dashboard
                     </button>
-                    {user && <Link href="/orders" onClick={() => setMobileOpen(false)} className="block text-sm font-black uppercase tracking-widest text-gray-900">Order History</Link>}
-                    <div className="pt-4 border-t border-gray-50">
+                    {user && <Link href="/orders" onClick={() => setMobileOpen(false)} className="block text-sm font-black uppercase tracking-widest text-white">Order History</Link>}
+                    <div className="pt-4 border-t border-white/10">
                         {user ? (
                             <div className="space-y-4">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 bg-violet-600 rounded-xl flex items-center justify-center text-white text-sm font-black uppercase shadow-sm">
+                                    <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-700 rounded-xl flex items-center justify-center text-white text-sm font-black uppercase shadow-sm">
                                         {(user.name || user.email || '?').charAt(0)}
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="text-sm font-black text-gray-900">{user.name || user.email?.split('@')[0]}</span>
-                                        <span className="text-xs text-gray-400">{user.email}</span>
+                                        <span className="text-sm font-black text-white">{user.name || user.email?.split('@')[0]}</span>
+                                        <span className="text-xs text-gray-500">{user.email}</span>
                                     </div>
                                 </div>
-                                <button onClick={handleLogout} className="w-full text-left py-3 text-sm font-black uppercase tracking-widest text-red-500">Sign Out</button>
+                                <button onClick={handleLogout} className="w-full text-left py-3 text-sm font-black uppercase tracking-widest text-red-400">Sign Out</button>
                             </div>
                         ) : (
                             <div className="grid grid-cols-2 gap-4">
-                                <Link href="/login" onClick={() => setMobileOpen(false)} className="flex items-center justify-center h-12 border border-gray-100 rounded-2xl text-xs font-black uppercase tracking-widest">Login</Link>
-                                <Link href="/signup" onClick={() => setMobileOpen(false)} className="flex items-center justify-center h-12 bg-gray-900 text-white rounded-2xl text-xs font-black uppercase tracking-widest">Join</Link>
+                                    <Link href="/login" onClick={() => setMobileOpen(false)} className="flex items-center justify-center h-12 border border-white/10 rounded-2xl text-xs font-black uppercase tracking-widest text-gray-300">Login</Link>
+                                    <Link href="/signup" onClick={() => setMobileOpen(false)} className="flex items-center justify-center h-12 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest">Join</Link>
                             </div>
                         )}
                     </div>

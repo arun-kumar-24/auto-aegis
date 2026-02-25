@@ -1,15 +1,20 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #111827;
-  --surface: #ffffff;
-  --surface-1: #f9fafb;
-  --surface-2: #f3f4f6;
-  --border: #e5e7eb;
-  --brand: #8b5cf6;
+  --background: #0a0a14;
+  --foreground: #e2e8f0;
+  --surface: #12121e;
+  --surface-1: #1a1a2e;
+  --surface-2: #16162a;
+  --border: rgba(139, 92, 246, 0.15);
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --brand: #a855f7;
   --brand-dark: #7c3aed;
-  --text-muted: #6b7280;
+  --brand-glow: rgba(168, 85, 247, 0.4);
+  --text-muted: #64748b;
+  --text-dim: #475569;
+  --accent-green: #22c55e;
+  --accent-cyan: #06b6d4;
 }
 
 @theme inline {
@@ -17,6 +22,8 @@
   --color-foreground: var(--foreground);
   --color-brand: var(--brand);
   --color-brand-dark: var(--brand-dark);
+  --color-surface: var(--surface);
+  --color-surface-1: var(--surface-1);
 }
 
 body {
@@ -27,39 +34,122 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ─── Shimmer Skeleton ─────────────────────────────────────── */
-@keyframes shimmer {
-  0% {
-    background-position: -400px 0;
-  }
+/* ─── Gradient Backgrounds ────────────────────────────────── */
+.bg-hero-gradient {
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(124, 58, 237, 0.15) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 20%, rgba(88, 28, 235, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 50% at 20% 80%, rgba(6, 182, 212, 0.05) 0%, transparent 50%),
+    var(--background);
+}
 
-  100% {
-    background-position: 400px 0;
-  }
+.bg-section-gradient {
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 50%, rgba(124, 58, 237, 0.06) 0%, transparent 70%),
+    var(--background);
+}
+
+/* ─── Glass Card ──────────────────────────────────────────── */
+.glass-card {
+  background: rgba(18, 18, 30, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(139, 92, 246, 0.12);
+}
+
+.glass-card-subtle {
+  background: rgba(26, 26, 46, 0.5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* ─── Gradient Text ───────────────────────────────────────── */
+.text-gradient-purple {
+  background: linear-gradient(135deg, #a855f7 0%, #7c3aed 50%, #c084fc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-brand {
+  background: linear-gradient(to right, #c084fc, #a855f7, #7c3aed);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Glow Effects ────────────────────────────────────────── */
+.glow-purple {
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.3), 0 0 60px rgba(168, 85, 247, 0.1);
+}
+
+.glow-purple-sm {
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.2), 0 0 30px rgba(168, 85, 247, 0.08);
+}
+
+.glow-green {
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.4);
+}
+
+/* ─── Animations ──────────────────────────────────────────── */
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
 }
 
 .skeleton {
-  background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+  background: linear-gradient(90deg, #1a1a2e 25%, #2a2a3e 50%, #1a1a2e 75%);
   background-size: 800px 100%;
   animation: shimmer 1.5s infinite linear;
   border-radius: 0.75rem;
 }
 
-/* ─── Page fade-in ─────────────────────────────────────────── */
 @keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .page-enter {
   animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.05); }
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient-shift 6s ease infinite;
+}
+
+@keyframes border-glow {
+  0%, 100% { border-color: rgba(168, 85, 247, 0.15); }
+  50% { border-color: rgba(168, 85, 247, 0.35); }
+}
+
+.animate-border-glow {
+  animation: border-glow 3s ease-in-out infinite;
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -195,7 +285,7 @@ body {
   padding-left: 8px;
 }
 
-/* ── Incident Log scrollbar & content ─────────────────────────── */
+/* ── Scrollbar Styles ─────────────────────────────────── */
 .incident-log-content::-webkit-scrollbar {
   width: 6px;
 }
@@ -210,7 +300,6 @@ body {
   background: rgba(255, 255, 255, 0.2);
 }
 
-/* Thin scrollbar for the file-switcher bar */
 .scrollbar-thin::-webkit-scrollbar {
   height: 4px;
 }

@@ -3,10 +3,10 @@
 import { Loader2 } from 'lucide-react';
 
 const variants = {
-    primary: 'bg-gray-900 hover:bg-black text-white shadow-xl shadow-gray-200 active:scale-95',
-    ghost: 'bg-transparent hover:bg-gray-50 text-gray-500 border border-gray-100',
-    danger: 'bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-100',
-    outline: 'border-2 border-violet-600 text-violet-600 hover:bg-violet-50 font-black',
+    primary: 'bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white shadow-lg shadow-purple-900/30 glow-purple-sm active:scale-95',
+    ghost: 'bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 hover:border-white/20',
+    danger: 'bg-red-600/80 hover:bg-red-500/80 text-white shadow-lg shadow-red-900/20',
+    outline: 'border-2 border-violet-500/50 text-violet-400 hover:bg-violet-500/10 hover:border-violet-400 font-black',
 };
 
 export default function Button({
@@ -33,7 +33,7 @@ export default function Button({
             className={`
                 inline-flex items-center justify-center gap-2 font-black uppercase tracking-widest rounded-2xl
                 transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed
-                focus:outline-none focus:ring-4 focus:ring-violet-500/10
+                focus:outline-none focus:ring-4 focus:ring-violet-500/20
                 ${sizes[size] || sizes.md}
                 ${variants[variant] || variants.primary}
                 ${fullWidth ? 'w-full' : ''}
