@@ -87,8 +87,8 @@ function CustomTooltip({ active, payload, label }) {
     if (!active || !payload?.length) return null;
     const ms = payload[0]?.value;
     return (
-        <div className="bg-white border border-gray-200 rounded-xl px-4 py-3 shadow-lg">
-            <p className="text-xs font-bold text-gray-800 mb-1">{label}</p>
+        <div className="bg-[#1a1a2e] border border-white/10 rounded-xl px-4 py-3 shadow-lg">
+            <p className="text-xs font-bold text-gray-300 mb-1">{label}</p>
             <p className="text-sm font-mono" style={{ color: latencyColor(ms) }}>
                 {ms} ms
             </p>
@@ -102,8 +102,8 @@ function SimTooltip({ active, payload, label }) {
     const ms = payload[0]?.value;
     const isSpike = ms > 100;
     return (
-        <div className={`rounded-xl px-4 py-3 shadow-lg border ${isSpike ? 'bg-red-50 border-red-200' : 'bg-white border-gray-200'}`}>
-            <p className="text-xs font-bold text-gray-800 mb-1">{label}</p>
+        <div className={`rounded-xl px-4 py-3 shadow-lg border ${isSpike ? 'bg-red-950/80 border-red-500/30' : 'bg-[#1a1a2e] border-white/10'}`}>
+            <p className="text-xs font-bold text-gray-300 mb-1">{label}</p>
             <p className="text-sm font-mono" style={{ color: isSpike ? '#ef4444' : '#22c55e' }}>
                 {ms} ms {isSpike ? '⚠ SPIKE' : ''}
             </p>
@@ -301,19 +301,19 @@ export default function LatencyChart({ originLocation, monitorName }) {
         return (
             <div className="flex flex-col h-full overflow-hidden">
                 {/* Header */}
-                <div className="shrink-0 flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
+                <div className="shrink-0 flex items-center justify-between px-4 py-3 border-b border-white/[0.06] bg-[#0e0e1a]">
                     <div className="flex items-center gap-2">
-                        <Zap size={14} className={simDone ? 'text-emerald-500' : 'text-amber-500 animate-pulse'} />
+                        <Zap size={14} className={simDone ? 'text-emerald-400' : 'text-amber-400 animate-pulse'} />
                         <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
                             {simDone ? 'Visualisation Complete' : 'Live Latency Visualisation'}
                         </span>
-                        <span className="text-[10px] text-gray-400 font-mono">
+                        <span className="text-[10px] text-gray-600 font-mono">
                             → {simRegion}
                         </span>
                     </div>
                     <button
                         onClick={stopSim}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold bg-gray-100 text-gray-500 hover:bg-red-100 hover:text-red-600 transition-all"
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold bg-white/[0.04] text-gray-500 border border-white/[0.06] hover:bg-red-500/15 hover:text-red-400 hover:border-red-500/25 transition-all"
                     >
                         <Square size={10} />
                         {simDone ? 'Close' : 'Stop'}
@@ -321,18 +321,18 @@ export default function LatencyChart({ originLocation, monitorName }) {
                 </div>
 
                 {/* Live stats bar */}
-                <div className="shrink-0 flex items-center gap-3 px-4 py-2 border-b border-gray-100 bg-white overflow-x-auto">
+                <div className="shrink-0 flex items-center gap-3 px-4 py-2 border-b border-white/[0.04] bg-[#0a0a14] overflow-x-auto">
                     <StatPill label="Current" value={`${currentLatency} ms`} color={isCurrentSpike ? '#ef4444' : '#22c55e'} />
                     <StatPill label="Threshold" value={`${THRESHOLD} ms`} color="#a78bfa" />
                     <StatPill label="Alerts Sent" value={`${alertsSent}`} color="#f97316" />
                     <div className="ml-auto flex items-center gap-2">
-                        <div className="w-24 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="w-24 h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
                             <div
                                 className="h-full bg-violet-400 rounded-full transition-all duration-500"
                                 style={{ width: `${progress}%` }}
                             />
                         </div>
-                        <span className="text-[10px] text-gray-400 font-mono">{simSecond}/{SIM_DURATION}s</span>
+                        <span className="text-[10px] text-gray-500 font-mono">{simSecond}/{SIM_DURATION}s</span>
                     </div>
                 </div>
 
@@ -346,15 +346,15 @@ export default function LatencyChart({ originLocation, monitorName }) {
                                     <stop offset="95%" stopColor="#a78bfa" stopOpacity={0} />
                                 </linearGradient>
                             </defs>
-                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" vertical={false} />
+                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
                             <XAxis
                                 dataKey="time"
-                                tick={{ fontSize: 10, fill: '#6b7280' }}
-                                axisLine={{ stroke: 'rgba(0,0,0,0.08)' }}
+                                tick={{ fontSize: 10, fill: '#4b5563' }}
+                                axisLine={{ stroke: 'rgba(255,255,255,0.06)' }}
                                 tickLine={false}
                             />
                             <YAxis
-                                tick={{ fontSize: 10, fill: '#6b7280' }}
+                                tick={{ fontSize: 10, fill: '#4b5563' }}
                                 axisLine={false}
                                 tickLine={false}
                                 unit=" ms"
@@ -397,7 +397,7 @@ export default function LatencyChart({ originLocation, monitorName }) {
                 </div>
 
                 {/* Event log */}
-                <div className="shrink-0 max-h-24 overflow-y-auto px-4 py-2 border-t border-gray-100 bg-gray-50/60 text-[10px] font-mono space-y-0.5 incident-log-content">
+                <div className="shrink-0 max-h-24 overflow-y-auto px-4 py-2 border-t border-white/[0.04] bg-[#0a0a14] text-[10px] font-mono space-y-0.5 incident-log-content">
                     {simLog.length === 0 && (
                         <p className="text-gray-400">Waiting for events…</p>
                     )}
@@ -425,9 +425,9 @@ export default function LatencyChart({ originLocation, monitorName }) {
     return (
         <div className="flex flex-col h-full overflow-hidden">
             {/* Header */}
-            <div className="shrink-0 flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
+            <div className="shrink-0 flex items-center justify-between px-4 py-3 border-b border-white/[0.06] bg-[#0e0e1a]">
                 <div className="flex items-center gap-2">
-                    <BarChart3 size={14} className="text-violet-500" />
+                    <BarChart3 size={14} className="text-violet-400" />
                     <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
                         Regional Latency
                     </span>
@@ -437,7 +437,7 @@ export default function LatencyChart({ originLocation, monitorName }) {
                     {/* Visualise Latency button */}
                     <button
                         onClick={startSim}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold bg-amber-50 text-amber-600 border border-amber-200 hover:bg-amber-100 transition-all"
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 transition-all"
                         title="Run 15s latency visualisation with Slack alerts"
                     >
                         <Play size={10} fill="currentColor" />
@@ -445,7 +445,7 @@ export default function LatencyChart({ originLocation, monitorName }) {
                     </button>
 
                     {/* Chart type toggle */}
-                    <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5">
+                    <div className="flex items-center gap-1 bg-white/[0.04] border border-white/[0.06] rounded-lg p-0.5">
                         {[
                             { key: 'bar', icon: BarChart3, tip: 'Bar chart' },
                             { key: 'line', icon: TrendingUp, tip: 'Line chart' },
@@ -457,8 +457,8 @@ export default function LatencyChart({ originLocation, monitorName }) {
                                 title={tip}
                                 className={`px-2 py-1 rounded-md text-[10px] font-bold transition-all ${
                                     chartType === key
-                                        ? 'bg-violet-100 text-violet-700'
-                                        : 'text-gray-400 hover:text-gray-600'
+                                    ? 'bg-violet-500/15 text-violet-300'
+                                    : 'text-gray-500 hover:text-gray-300'
                                 }`}
                             >
                                 {Icon ? <Icon size={12} /> : 'Both'}
@@ -469,7 +469,7 @@ export default function LatencyChart({ originLocation, monitorName }) {
             </div>
 
             {/* Stat pills */}
-            <div className="shrink-0 flex items-center gap-3 px-4 py-2 border-b border-gray-100 bg-white overflow-x-auto">
+            <div className="shrink-0 flex items-center gap-3 px-4 py-2 border-b border-white/[0.04] bg-[#0a0a14] overflow-x-auto">
                 <StatPill label="Average" value={`${avgLatency} ms`} color="#a78bfa" />
                 <StatPill label="Fastest" value={`${minEntry?.region} · ${minEntry?.latency} ms`} color="#22c55e" />
                 <StatPill label="Slowest" value={`${maxEntry?.region} · ${maxEntry?.latency} ms`} color="#ef4444" />
@@ -479,26 +479,26 @@ export default function LatencyChart({ originLocation, monitorName }) {
             <div className="flex-1 min-h-0 px-2 py-3">
                 <ResponsiveContainer width="100%" height="100%">
                     <ComposedChart data={data} margin={{ top: 8, right: 12, bottom: 60, left: 4 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" vertical={false} />
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
                         <XAxis
                             dataKey="region"
-                            tick={{ fontSize: 9, fill: '#6b7280', fontWeight: 600 }}
+                            tick={{ fontSize: 9, fill: '#4b5563', fontWeight: 600 }}
                             interval={0}
                             angle={-45}
                             textAnchor="end"
-                            axisLine={{ stroke: 'rgba(0,0,0,0.08)' }}
+                            axisLine={{ stroke: 'rgba(255,255,255,0.06)' }}
                             tickLine={false}
                             height={60}
                         />
                         <YAxis
-                            tick={{ fontSize: 10, fill: '#6b7280' }}
+                            tick={{ fontSize: 10, fill: '#4b5563' }}
                             axisLine={false}
                             tickLine={false}
                             unit=" ms"
                             width={55}
                         />
-                        <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(0,0,0,0.04)' }} />
-                        <Legend wrapperStyle={{ fontSize: 10, color: '#9ca3af', paddingTop: 4 }} />
+                        <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
+                        <Legend wrapperStyle={{ fontSize: 10, color: '#6b7280', paddingTop: 4 }} />
 
                         {(chartType === 'bar' || chartType === 'both') && (
                             <Bar
@@ -537,10 +537,10 @@ export default function LatencyChart({ originLocation, monitorName }) {
 /* ── Small stat pill ────────────────────────────────────────── */
 function StatPill({ label, value, color }) {
     return (
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-50 border border-gray-200 whitespace-nowrap">
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.06] whitespace-nowrap">
             <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: color }} />
-            <span className="text-[10px] text-gray-400 font-semibold">{label}</span>
-            <span className="text-[11px] font-bold text-gray-700">{value}</span>
+            <span className="text-[10px] text-gray-500 font-semibold">{label}</span>
+            <span className="text-[11px] font-bold text-gray-300">{value}</span>
         </div>
     );
 }

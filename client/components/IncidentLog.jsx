@@ -125,20 +125,20 @@ export default function IncidentLog({ monitorId }) {
     return (
         <div className="flex flex-col h-full overflow-hidden">
             {/* ── Header bar ────────────────────────────────────── */}
-            <div className="shrink-0 flex items-center gap-2 px-4 py-3 border-b border-gray-200 bg-gray-50">
-                <FolderOpen size={14} className="text-violet-500" />
+            <div className="shrink-0 flex items-center gap-2 px-4 py-3 border-b border-white/[0.06] bg-[#0e0e1a]">
+                <FolderOpen size={14} className="text-violet-400" />
                 <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
                     Journey Files
                 </span>
                 {folderName && (
-                    <span className="ml-auto text-[10px] text-gray-400 font-mono truncate max-w-[200px]" title={folderName}>
+                    <span className="ml-auto text-[10px] text-gray-600 font-mono truncate max-w-[200px]" title={folderName}>
                         {folderName}
                     </span>
                 )}
             </div>
 
             {/* ── File-switcher bar with per-file download ──────── */}
-            <div className="shrink-0 flex items-center gap-1.5 px-4 py-2 overflow-x-auto border-b border-gray-100 bg-white scrollbar-thin">
+            <div className="shrink-0 flex items-center gap-1.5 px-4 py-2 overflow-x-auto border-b border-white/[0.04] bg-[#0a0a14] scrollbar-thin">
                 {files.map((file) => {
                     const active = selectedFile?.name === file.name;
                     return (
@@ -147,8 +147,8 @@ export default function IncidentLog({ monitorId }) {
                                 onClick={() => setSelectedFile(file)}
                                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-l-lg text-[11px] font-semibold whitespace-nowrap transition-all
                                     ${active
-                                        ? 'bg-violet-100 text-violet-700 border border-r-0 border-violet-300'
-                                        : 'bg-gray-100 text-gray-500 border border-r-0 border-gray-200 hover:bg-gray-200 hover:text-gray-700'
+                                    ? 'bg-violet-500/15 text-violet-300 border border-r-0 border-violet-500/25'
+                                    : 'bg-white/[0.04] text-gray-500 border border-r-0 border-white/[0.06] hover:bg-white/[0.08] hover:text-gray-300'
                                     }`}
                             >
                                 <FileText size={12} />
@@ -159,8 +159,8 @@ export default function IncidentLog({ monitorId }) {
                                 title={`Download ${file.name}`}
                                 className={`px-1.5 py-1.5 rounded-r-lg text-[11px] transition-all
                                     ${active
-                                        ? 'bg-violet-100 border border-l-0 border-violet-300 text-violet-500 hover:text-emerald-600 hover:bg-emerald-100'
-                                        : 'bg-gray-100 border border-l-0 border-gray-200 text-gray-400 hover:text-emerald-600 hover:bg-emerald-100'
+                                    ? 'bg-violet-500/15 border border-l-0 border-violet-500/25 text-violet-400 hover:text-emerald-400 hover:bg-emerald-500/15'
+                                    : 'bg-white/[0.04] border border-l-0 border-white/[0.06] text-gray-600 hover:text-emerald-400 hover:bg-emerald-500/15'
                                     }`}
                             >
                                 <Download size={11} />
@@ -185,24 +185,24 @@ export default function IncidentLog({ monitorId }) {
                         <img
                             src={selectedFile.signedUrl}
                             alt={selectedFile.name}
-                            className="max-w-full max-h-[70vh] rounded-xl border border-gray-200 shadow-sm object-contain"
+                                className="max-w-full max-h-[70vh] rounded-xl border border-white/[0.06] object-contain"
                         />
-                        <span className="text-[10px] text-gray-400 font-mono">{selectedFile.name}</span>
+                            <span className="text-[10px] text-gray-500 font-mono">{selectedFile.name}</span>
                     </div>
                 ) : isMarkdown(selectedFile?.name) ? (
-                    <div className="prose prose-sm max-w-none
-                        prose-headings:text-gray-800 prose-headings:font-black
-                        prose-p:text-gray-600 prose-p:leading-relaxed
-                        prose-a:text-violet-600 prose-a:no-underline hover:prose-a:underline
-                        prose-code:text-emerald-700 prose-code:bg-gray-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
-                        prose-pre:bg-gray-50 prose-pre:border prose-pre:border-gray-200 prose-pre:rounded-xl
-                        prose-strong:text-gray-800
-                        prose-li:text-gray-600
+                            <div className="prose prose-sm prose-invert max-w-none
+                        prose-headings:text-white prose-headings:font-black
+                        prose-p:text-gray-400 prose-p:leading-relaxed
+                        prose-a:text-violet-400 prose-a:no-underline hover:prose-a:underline
+                        prose-code:text-emerald-400 prose-code:bg-white/5 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
+                        prose-pre:bg-[#0a0a14] prose-pre:border prose-pre:border-white/[0.06] prose-pre:rounded-xl
+                        prose-strong:text-white
+                        prose-li:text-gray-400
                         prose-blockquote:border-violet-400 prose-blockquote:text-gray-500
-                        prose-table:text-gray-600
-                        prose-th:text-gray-700 prose-th:border-gray-200
-                        prose-td:border-gray-200
-                        prose-hr:border-gray-200
+                        prose-table:text-gray-400
+                        prose-th:text-gray-300 prose-th:border-white/[0.06]
+                        prose-td:border-white/[0.06]
+                        prose-hr:border-white/[0.06]
                         prose-img:rounded-xl"
                     >
                         <ReactMarkdown remarkPlugins={[remarkGfm]}>
@@ -210,7 +210,7 @@ export default function IncidentLog({ monitorId }) {
                         </ReactMarkdown>
                     </div>
                 ) : (
-                    <pre className="text-xs text-gray-700 font-mono whitespace-pre-wrap break-words leading-relaxed">
+                                <pre className="text-xs text-gray-400 font-mono whitespace-pre-wrap break-words leading-relaxed">
                         {fileContent}
                     </pre>
                 )}
