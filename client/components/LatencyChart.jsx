@@ -174,7 +174,7 @@ function generateSimLatency(second, spikePlan) {
 /* ═══════════════════════════════════════════════════════════════
    LatencyChart — bar + line chart with visualisation mode
    ═══════════════════════════════════════════════════════════════ */
-export default function LatencyChart({ originLocation, monitorName }) {
+export default function LatencyChart({ originLocation, monitorName, autoStart = false }) {
     const [chartType, setChartType] = useState('both');
     const [simMode, setSimMode] = useState(false);       // simulation active?
     const [simData, setSimData] = useState([]);           // real-time points
@@ -216,6 +216,17 @@ export default function LatencyChart({ originLocation, monitorName }) {
         setSimSecond(0);
         setAlertsSent(0);
     }, []);
+
+    /* ── Auto-start simulation on mount if requested ────────── */
+    useEffect(() => {
+        if (autoStart) {
+            // Slight delay to ensure chart container is fully rendered
+            const timer = setTimeout(() => {
+                startSim();
+            }, 300);
+            return () => clearTimeout(timer);
+        }
+    }, [autoStart, startSim]);
 
     /* ── Simulation tick ────────────────────────────────────── */
     useEffect(() => {
@@ -434,16 +445,6 @@ export default function LatencyChart({ originLocation, monitorName }) {
                 </div>
 
                 <div className="flex items-center gap-2">
-                    {/* Visualise Latency button */}
-                    <button
-                        onClick={startSim}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 transition-all"
-                        title="Run 15s latency visualisation with Slack alerts"
-                    >
-                        <Play size={10} fill="currentColor" />
-                        Visualise Latency
-                    </button>
-
                     {/* Chart type toggle */}
                     <div className="flex items-center gap-1 bg-white/[0.04] border border-white/[0.06] rounded-lg p-0.5">
                         {[
